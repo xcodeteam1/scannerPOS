@@ -3,8 +3,6 @@ dotenv.config();
 
 const { DB_PASSWORD, DB_NAME, DB_HOST, DB_USERNAME } = process.env;
 
-console.log(DB_HOST);
-
 const config = {
   client: 'pg',
   connection: {
