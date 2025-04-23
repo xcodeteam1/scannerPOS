@@ -4,6 +4,13 @@ import knexConfig from '../../knexfile';
 import { hashPassword } from 'lib/bcrypt';
 const db = knex(knexConfig);
 
+const selectByLoginAdminQuery: string = `
+    SELECT *FROM admin WHERE login = ?;
+`;
+
+const selectByLoginCashierQuery: string = `
+    SELECT *FROM cashier WHERE name = ?;
+`;
 const selectAllCashierQuery: string = `
         SELECT 
             c.id,
@@ -12,7 +19,13 @@ const selectAllCashierQuery: string = `
             FROM cashier AS c
             LEFT JOIN branch AS b ON b.id = c.id;
 `;
-
+const createAdminQuery: string = `
+ INSERT INTO admin (login, password)
+  SELECT ?, ?
+  WHERE NOT EXISTS (
+    SELECT 1 FROM admin WHERE login = ?
+  )
+  RETURNING *;`;
 const selectByIDCashierQuery: string = `
         SELECT 
             c.id,
@@ -51,6 +64,20 @@ const deleteCashierQuery: string = `
 
 @Injectable()
 export class CashiersRepo {
+  async selectByLoginAdmin(login: string) {
+    const res = await db.raw(selectByLoginAdminQuery, [login]);
+    return res.rows;
+  }
+  async selectByloginCashier(login: string) {
+    const res = await db.raw(selectByLoginCashierQuery, [login]);
+    return res.rows;
+  }
+
+  async createAdminIfNotExists(login: string, password: string) {
+    const hashed = await hashPassword(password);
+    const res = await db.raw(createAdminQuery, [login, hashed, login]);
+    console.log(res.rows);
+  }
   async selectAllCashier() {
     const res = await db.raw(selectAllCashierQuery);
     return res.rows;

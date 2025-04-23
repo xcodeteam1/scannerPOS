@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CashiersRepo } from './admin.repository';
 import { BranchRepo } from 'src/branch/branch.repository';
+import { compare } from 'bcrypt';
+import { generateJWT } from 'lib/jwt';
 
 @Injectable()
 export class AdminService {
@@ -8,7 +10,22 @@ export class AdminService {
     private readonly cashiersRepo: CashiersRepo,
     private readonly branchRepo: BranchRepo,
   ) {}
+
+  async allLogin(data: { login: string; password: string }) {
+    const result1 = await this.cashiersRepo.selectByLoginAdmin(data.login);
+    const result2 = await this.cashiersRepo.selectByloginCashier(data.login);
+
+    const user = result1[0] || result2[0];
+    if (!user) throw new NotFoundException('user not found');
+
+    const isMatch = await compare(data.password, user.password);
+    if (!isMatch) throw new NotFoundException('parol is incorrect');
+    const token = generateJWT(user);
+
+    return { user, token };
+  }
   async selectAllCashier() {
+    await this.cashiersRepo.createAdminIfNotExists('admin', 'admin123');
     return await this.cashiersRepo.selectAllCashier();
   }
   async selectByIDCashier(id: number) {

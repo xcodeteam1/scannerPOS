@@ -12,7 +12,20 @@ import { AdminService } from './admin.service';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { CreateCasheirDto } from './dto/create-cashier.dto';
 import { UpdateCasheirDto } from './dto/update-cashier.dto';
+import { LoginDto } from './dto/login.dto';
 
+@ApiTags('Login')
+@Controller('auth')
+export class LoginController {
+  constructor(private readonly service: AdminService) {}
+
+  @HttpCode(200)
+  @Post('login')
+  @ApiBody({ type: LoginDto })
+  allLoginCont(@Body() body: LoginDto) {
+    return this.service.allLogin(body);
+  }
+}
 @ApiTags('Cashier')
 @Controller('cashier')
 export class AdminController {
@@ -34,6 +47,7 @@ export class AdminController {
   createCashierCont(@Body() body: CreateCasheirDto) {
     return this.service.createCashier(body);
   }
+
   @HttpCode(201)
   @Put('/update/:id')
   @ApiBody({ type: UpdateCasheirDto })
