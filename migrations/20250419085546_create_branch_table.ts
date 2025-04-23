@@ -6,7 +6,8 @@ export async function up(knex: Knex): Promise<void> {
         CREATE TABLE IF NOT EXISTS branch(
         id SERIAL PRIMARY KEY,
         name VARCHAR(255),
-        description VARCHAR(255),
+        address VARCHAR(255),
+        contact VARCHAR(20),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );

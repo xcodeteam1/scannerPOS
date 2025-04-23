@@ -9,7 +9,11 @@ import {
   Put,
 } from '@nestjs/common';
 import { BranchService } from './branch.service';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { CreateBranchDto } from './dto/create-branch.dto';
+import { UpdateBranchDto } from './dto/update-branch.dto';
 
+@ApiTags('Branch')
 @Controller('branch')
 export class BranchController {
   constructor(private readonly service: BranchService) {}
@@ -26,15 +30,14 @@ export class BranchController {
   }
   @HttpCode(201)
   @Post('create')
-  createBranchCont(@Body() body: { name: string; description: string }) {
+  @ApiBody({ type: CreateBranchDto })
+  createBranchCont(@Body() body: CreateBranchDto) {
     return this.service.createBranch(body);
   }
   @HttpCode(201)
   @Put('/update/:id')
-  updateBranchCont(
-    @Body() body: { name: string; description: string },
-    @Param('id') id: number,
-  ) {
+  @ApiBody({ type: UpdateBranchDto })
+  updateBranchCont(@Body() body: UpdateBranchDto, @Param('id') id: number) {
     return this.service.updateBranch(id, body);
   }
   @HttpCode(200)

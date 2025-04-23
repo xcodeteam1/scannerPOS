@@ -14,16 +14,18 @@ const selectByIDBranch: string = `
 const createBranchQuery: string = `
     INSERT INTO branch(
     name,
-    description
+    address,
+    contact
     )
-    VALUES(?,?)
+    VALUES(?,?,?)
     RETURNING *;
     `;
 const updateBranchQuery: string = `
     UPDATE branch
       SET
       name = ?,
-      description = ?,
+      address = ?,
+      contact = ?,
       updated_at = NOW()
     WHERE id = ?
     RETURNING *;
@@ -43,14 +45,22 @@ export class BranchRepo {
     const res = await db.raw(selectByIDBranch, [id]);
     return res.rows[0];
   }
-  async createBranch(data: { name: string; description: string }) {
-    const res = await db.raw(createBranchQuery, [data.name, data.description]);
+  async createBranch(data: { name: string; address: string; contact: string }) {
+    const res = await db.raw(createBranchQuery, [
+      data.name,
+      data.address,
+      data.contact,
+    ]);
     return res.rows[0];
   }
-  async updateBranch(id: number, data: { name: string; description: string }) {
+  async updateBranch(
+    id: number,
+    data: { name: string; address: string; contact: string },
+  ) {
     const res = await db.raw(updateBranchQuery, [
       data.name,
-      data.description,
+      data.address,
+      data.contact,
       id,
     ]);
     return res.rows[0];

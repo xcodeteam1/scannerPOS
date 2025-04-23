@@ -15,16 +15,19 @@ export class BranchService {
     return result;
   }
 
-  async createBranch(data: { name: string; description: string }) {
+  async createBranch(data: { name: string; address: string; contact: string }) {
     const result = await this.branchRepo.createBranch(data);
     return result;
   }
-  async updateBranch(id: number, data: { name: string; description: string }) {
+  async updateBranch(
+    id: number,
+    data: { name: string; address: string; contact: string },
+  ) {
     const result = await this.branchRepo.updateBranch(id, data);
     return result;
   }
   async deleteBranch(id: number) {
     const result = await this.branchRepo.deleteBranch(id);
-    return result.length !== 0 ? 'deleted' : 'unsuccesfully';
+    return result.length !== 0 ? 'succesfully deleting' : 'deleted';
   }
 }

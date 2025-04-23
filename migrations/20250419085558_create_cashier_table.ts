@@ -6,7 +6,7 @@ export async function up(knex: Knex): Promise<void> {
         id SERIAL PRIMARY KEY,
         branch_id INTEGER REFERENCES branch(id) ON DELETE CASCADE,
         name VARCHAR(20),
-        description VARCHAR(255),
+        password VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
