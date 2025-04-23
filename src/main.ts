@@ -11,8 +11,8 @@ async function bootstrap() {
 
   // Swagger konfiguratsiyasi
   const config = new DocumentBuilder()
-    .setTitle('Branch API')
-    .setDescription('Filiallar bilan ishlovchi REST API hujjati')
+    .setTitle('Scanner-POS')
+    .setDescription('Scanner-POS documentation')
     .setVersion('1.0')
     .build();
 
