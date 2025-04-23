@@ -12,6 +12,15 @@ const selectByIDProductQuery: string = `
             WHERE barcode = ?;
 `;
 
+const searchProductQuery: string = `
+  SELECT * FROM product
+  WHERE 
+    (
+      to_tsvector('simple', name) @@ plainto_tsquery(?)
+    )
+    OR barcode ILIKE ?;
+`;
+
 const createProductQuery: string = `
         INSERT INTO product(
         barcode,
@@ -52,6 +61,15 @@ export class ProductRepo {
   async selectByIDProduct(id: number) {
     const res = await db.raw(selectByIDProductQuery, [id]);
     return res.rows[0];
+  }
+  async searchProduct(q: string) {
+    if (!q.trim()) return [];
+
+    const fullText = q; // plainto_tsquery uchun
+    const ilikeText = `%${q}%`; // ILIKE uchun
+
+    const res = await db.raw(searchProductQuery, [fullText, ilikeText]);
+    return res.rows;
   }
   async createProduct(data: {
     barcode: string;

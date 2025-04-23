@@ -15,6 +15,10 @@ export class ProductService {
       throw new NotFoundException(`product not found with id: ${id}`);
     return result;
   }
+  async searchProduct(q: string) {
+    const result = await this.productRepo.searchProduct(q);
+    return result;
+  }
 
   async createProduct(data: {
     barcode: string;

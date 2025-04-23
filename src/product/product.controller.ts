@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { ProductService } from './product.service';
@@ -22,6 +23,12 @@ export class ProductController {
   @Get('all')
   selectAllProductCont() {
     return this.service.selectAllProduct();
+  }
+
+  @HttpCode(200)
+  @Get('search')
+  searchProductCont(@Query('q') q: string) {
+    return this.service.searchProduct(q);
   }
 
   @HttpCode(200)
