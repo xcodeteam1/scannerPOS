@@ -1,15 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductRepo } from './product.repository';
+import { BranchRepo } from 'src/branch/branch.repository';
 
 @Injectable()
 export class ProductService {
-  constructor(private readonly productRepo: ProductRepo) {}
+  constructor(
+    private readonly productRepo: ProductRepo,
+    private readonly branchRepo: BranchRepo,
+  ) {}
 
   async selectAllProduct() {
     return await this.productRepo.selectAllProduct();
   }
 
-  async selectByIDProduct(id: number) {
+  async selectByIDProduct(id: string) {
     const result = await this.productRepo.selectByIDProduct(id);
     if (!result)
       throw new NotFoundException(`product not found with id: ${id}`);
@@ -23,30 +27,48 @@ export class ProductService {
   async createProduct(data: {
     barcode: string;
     name: string;
+    branch_id: number;
     price: number;
     stock: number;
     description: string;
   }) {
+    const result1 = await this.productRepo.selectByIDProduct(data.barcode);
+    if (result1)
+      throw new NotFoundException(`product is  found with id: ${data.barcode}`);
+
+    const result2 = await this.branchRepo.selectByIDBranch(data.branch_id);
+    if (!result2)
+      throw new NotFoundException(
+        `branch not  found with id: ${data.branch_id}`,
+      );
+
     const result = await this.productRepo.createProduct(data);
     return result;
   }
 
   async updateProduct(
-    id: number,
+    barcode: string,
     data: {
       barcode: string;
       name: string;
+      branch_id: number;
       price: number;
       stock: number;
       description: string;
     },
   ) {
-    const result = await this.productRepo.updateProduct(id, data);
+    const result2 = await this.branchRepo.selectByIDBranch(data.branch_id);
+    if (!result2)
+      throw new NotFoundException(
+        `branch not  found with id: ${data.branch_id}`,
+      );
+
+    const result = await this.productRepo.updateProduct(barcode, data);
     return result;
   }
 
-  async deleteProduct(id: number) {
-    const result = await this.productRepo.deleteProductQuery(id);
+  async deleteProduct(barcode: string) {
+    const result = await this.productRepo.deleteProductQuery(barcode);
     return result.length !== 0 ? 'succesfully deleting' : 'deleted';
   }
 }

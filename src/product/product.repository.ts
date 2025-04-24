@@ -25,11 +25,12 @@ const createProductQuery: string = `
         INSERT INTO product(
         barcode,
         name,
+        branch_id,
         price,
         stock,
         description
         )
-         VALUES(?,?,?,?,?)
+         VALUES(?,?,?,?,?,?)
          RETURNING *;
 `;
 
@@ -38,6 +39,7 @@ const updateProductQuery: string = `
             SET 
             barcode = ?,
             name = ?,
+            branch_id = ?,
             price = ?,
             stock = ?,
             description = ?,
@@ -58,7 +60,7 @@ export class ProductRepo {
     const res = await db.raw(selectAllProductQuery);
     return res.rows;
   }
-  async selectByIDProduct(id: number) {
+  async selectByIDProduct(id: string) {
     const res = await db.raw(selectByIDProductQuery, [id]);
     return res.rows[0];
   }
@@ -74,6 +76,7 @@ export class ProductRepo {
   async createProduct(data: {
     barcode: string;
     name: string;
+    branch_id: number;
     price: number;
     stock: number;
     description: string;
@@ -81,6 +84,7 @@ export class ProductRepo {
     const res = await db.raw(createProductQuery, [
       data.barcode,
       data.name,
+      data.branch_id,
       data.price,
       data.stock,
       data.description,
@@ -88,10 +92,11 @@ export class ProductRepo {
     return res.rows[0];
   }
   async updateProduct(
-    id: number,
+    barcode: string,
     data: {
       barcode: string;
       name: string;
+      branch_id: number;
       price: number;
       stock: number;
       description: string;
@@ -100,15 +105,17 @@ export class ProductRepo {
     const res = await db.raw(updateProductQuery, [
       data.barcode,
       data.name,
+      data.branch_id,
       data.price,
       data.stock,
       data.description,
-      id,
+      barcode,
     ]);
+    console.log(res.rows);
     return res.rows[0];
   }
-  async deleteProductQuery(id: number) {
-    const res = await db.raw(deleteProductQuery, [id]);
+  async deleteProductQuery(barcode: string) {
+    const res = await db.raw(deleteProductQuery, [barcode]);
     return res.rows;
   }
 }

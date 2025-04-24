@@ -15,6 +15,12 @@ export class CreateProductDto {
   name: string;
 
   @ApiProperty()
+  @IsDefined({ message: 'branch_id property mavjud bolishi shart' })
+  @IsNumber()
+  @IsNotEmpty({ message: 'branch_id bosh bolmasligi kerak' })
+  branch_id: number;
+
+  @ApiProperty()
   @IsDefined({ message: 'price property mavjud bolishi shart' })
   @IsNumber()
   @IsNotEmpty({ message: 'price bosh bolmasligi kerak' })

@@ -33,7 +33,7 @@ export class ProductController {
 
   @HttpCode(200)
   @Get(':barcode')
-  selectByIDProductCont(@Param('barcode') barcode: number) {
+  selectByIDProductCont(@Param('barcode') barcode: string) {
     return this.service.selectByIDProduct(barcode);
   }
 
@@ -47,14 +47,14 @@ export class ProductController {
   @Put('/update/:barcode')
   @ApiBody({ type: UpdateProductDto })
   updateProduct(
-    @Param('barcode') barcode: number,
+    @Param('barcode') barcode: string,
     @Body() body: UpdateProductDto,
   ) {
     return this.service.updateProduct(barcode, body);
   }
   @HttpCode(200)
   @Delete('/delete/:barcode')
-  deleteProductCont(@Param('barcode') barcode: number) {
+  deleteProductCont(@Param('barcode') barcode: string) {
     return this.service.deleteProduct(barcode);
   }
 }
