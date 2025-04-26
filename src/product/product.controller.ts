@@ -21,8 +21,8 @@ export class ProductController {
 
   @HttpCode(200)
   @Get('all')
-  selectAllProductCont() {
-    return this.service.selectAllProduct();
+  selectAllProductCont(@Query('page') page: number) {
+    return this.service.selectAllProduct(page);
   }
 
   @HttpCode(200)

@@ -4,7 +4,7 @@ import knexConfig from '../../knexfile';
 const db = knex(knexConfig);
 
 const selectAllProductQuery: string = `
-        SELECT *FROM product;
+        SELECT *FROM product LIMIT ? OFFSET ?;
 `;
 
 const selectByIDProductQuery: string = `
@@ -56,8 +56,9 @@ const deleteProductQuery: string = `
 
 @Injectable()
 export class ProductRepo {
-  async selectAllProduct() {
-    const res = await db.raw(selectAllProductQuery);
+  async selectAllProduct(page: number, pageSize: number) {
+    const offset = (page - 1) * pageSize;
+    const res = await db.raw(selectAllProductQuery, [pageSize, offset]);
     return res.rows;
   }
   async selectByIDProduct(id: string) {

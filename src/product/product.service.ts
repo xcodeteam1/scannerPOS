@@ -9,8 +9,9 @@ export class ProductService {
     private readonly branchRepo: BranchRepo,
   ) {}
 
-  async selectAllProduct() {
-    return await this.productRepo.selectAllProduct();
+  async selectAllProduct(page: number) {
+    const pageSize = 20;
+    return await this.productRepo.selectAllProduct(page, pageSize);
   }
 
   async selectByIDProduct(id: string) {
