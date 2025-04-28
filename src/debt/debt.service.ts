@@ -11,6 +11,15 @@ export class DebtService {
     private readonly customerRepo: CustomerRepo,
     private readonly productRepo: ProductRepo,
   ) {}
+
+  async selectAllDebt() {
+    const result = await this.debtRepo.selectAllDebt();
+    return result;
+  }
+  async searchDebt(name: string) {
+    const result = await this.debtRepo.searchCustomer(name);
+    return result;
+  }
   async createDebt(data: CreateDebtDto[]) {
     for (const debt of data) {
       const customer = await this.customerRepo.selectByIDCustomer(
@@ -26,7 +35,6 @@ export class DebtService {
       const product = await this.productRepo.selectByIDProduct(
         debt.item_barcode,
       );
-      console.log(product);
       if (!product) {
         throw new NotFoundException(
           `product not found with barcode: ${debt.item_barcode}`,
