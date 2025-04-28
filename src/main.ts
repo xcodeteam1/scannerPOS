@@ -8,7 +8,7 @@ dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  app.enableCors();
   // Swagger konfiguratsiyasi
   const config = new DocumentBuilder()
     .setTitle('Scanner-POS')
