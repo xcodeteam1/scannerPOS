@@ -13,12 +13,15 @@ const selectByIDProductQuery: string = `
 `;
 
 const searchProductQuery: string = `
-  SELECT * FROM product
+  SELECT product.*, 
+  branch.name AS branch_name 
+  FROM product
+  JOIN branch ON branch.id = product.branch_id
   WHERE 
     (
-      to_tsvector('simple', name) @@ plainto_tsquery(?)
+      to_tsvector('simple', product.name) @@ plainto_tsquery(?)
     )
-    OR barcode ILIKE ?;
+    OR product.barcode ILIKE ?;
 `;
 
 const createProductQuery: string = `
