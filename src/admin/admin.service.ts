@@ -22,7 +22,8 @@ export class AdminService {
     if (!isMatch) throw new NotFoundException('parol is incorrect');
     const token = generateJWT(user);
 
-    return { user, token };
+    const { password, ...safeUser } = user;
+    return { user: safeUser, token };
   }
   async selectAllCashier() {
     await this.cashiersRepo.createAdminIfNotExists('admin', 'admin123');
