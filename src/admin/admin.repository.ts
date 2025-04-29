@@ -9,7 +9,11 @@ const selectByLoginAdminQuery: string = `
 `;
 
 const selectByLoginCashierQuery: string = `
-    SELECT *FROM cashier WHERE name = ?;
+    SELECT c.*,
+    branch.name AS branch_name 
+    FROM cashier AS c
+    LEFT JOIN branch ON branch.id = c.branch_id
+    WHERE c.name = ?;
 `;
 const selectAllCashierQuery: string = `
         SELECT 
