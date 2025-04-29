@@ -9,6 +9,7 @@ export async function up(knex: Knex): Promise<void> {
         customer_id INTEGER REFERENCES customer(id),
         amount NUMERIC(15,2),
         description VARCHAR(255),
+        debt_amount NUMERIC(15,2),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
         );

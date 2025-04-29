@@ -11,14 +11,23 @@ export class DebtService {
     private readonly customerRepo: CustomerRepo,
     private readonly productRepo: ProductRepo,
   ) {}
-
+  async selectPending() {
+    return await this.debtRepo.selectPending();
+  }
+  async selectOldest() {
+    return await this.debtRepo.selectOldest();
+  }
+  async amountDebt(id: number) {
+    return await this.debtRepo.amountDebt(id);
+  }
   async selectAllDebt() {
-    const result = await this.debtRepo.selectAllDebt();
-    return result;
+    return await this.debtRepo.selectAllDebt();
+  }
+  async selectRecent() {
+    return await this.debtRepo.selectRecent();
   }
   async searchDebt(name: string) {
-    const result = await this.debtRepo.searchCustomer(name);
-    return result;
+    return await this.debtRepo.searchCustomer(name);
   }
   async createDebt(data: CreateDebtDto[]) {
     for (const debt of data) {

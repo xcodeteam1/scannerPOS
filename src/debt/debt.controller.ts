@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { DebtService } from './debt.service';
 import { CreateDebtDto } from './dto/create-debt.dto';
@@ -9,9 +18,33 @@ export class DebtController {
   constructor(private readonly service: DebtService) {}
 
   @HttpCode(200)
+  @Get('pending')
+  selectPendingCont() {
+    return this.service.selectPending();
+  }
+
+  @HttpCode(200)
+  @Get('oldest')
+  selectOldest() {
+    return this.service.selectOldest();
+  }
+
+  @HttpCode(201)
+  @Put('update-amount/:id')
+  amountDebtCont(@Param('id') id: number) {
+    return this.service.amountDebt(id);
+  }
+
+  @HttpCode(200)
   @Get('all')
   selectAllDebtCont() {
     return this.service.selectAllDebt();
+  }
+
+  @HttpCode(200)
+  @Get('recent')
+  selectRecentCont() {
+    return this.service.selectRecent();
   }
 
   @HttpCode(200)

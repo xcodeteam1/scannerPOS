@@ -9,9 +9,10 @@ const createDebtQuery: string = `
         quantity,
         customer_id,
         amount,
+        debt_amount,
         description
         )
-        VALUES(?,?,?,?,?)
+        VALUES(?,?,?,?,?,?)
         RETURNING *;
 `;
 
@@ -30,7 +31,8 @@ const deleteDebtQuery: string = `
 `;
 
 const selectAllDebtQuery: string = `
-        SELECT 
+        SELECT
+          debt.id,
           SUM(debt.amount) AS all_amount,
           customer.customer_name,
           product.name AS product_name,
@@ -39,10 +41,11 @@ const selectAllDebtQuery: string = `
         LEFT JOIN customer ON customer.id = debt.customer_id
         LEFT JOIN product ON product.barcode = debt.item_barcode
         GROUP BY 
-            customer.customer_name, debt.created_at, product_name;
+            customer.customer_name, debt.created_at, product_name, debt.id;
 `;
 const searchDebtQuery: string = `
     SELECT
+        debt.id,
         SUM(debt.amount) AS all_amount,
         customer.customer_name,
         product.name AS product_name,
@@ -56,14 +59,65 @@ const searchDebtQuery: string = `
           OR customer.customer_name ILIKE ? || '%'
         )
     GROUP BY
-        customer.customer_name, debt.created_at, product.name;
+        customer.customer_name, debt.created_at, product.name, debt.id;
+`;
+const selectRecentQuery: string = `
+        SELECT 
+        COALESCE(SUM(debt_amount), 0) AS all_amount ,
+        COUNT(*) AS count_debt
+        FROM debt
+        WHERE created_at != updated_at;
 `;
 
+const amountDebtQuery: string = `
+        UPDATE debt 
+          SET
+          amount = 0,
+          updated_at = NOW()
+        WHERE id = ?
+        RETURNING *;
+`;
+
+const selectPendingQuery: string = `
+        SELECT
+          COALESCE(SUM(debt_amount), 0) - COALESCE(SUM(amount), 0) AS total_pending,
+          SUM(CASE WHEN amount != 0.00 THEN 1 ELSE 0 END) AS count
+        FROM debt;
+  `;
+
+const selectOldestQuery: string = `
+          SELECT 
+          d.id,
+          d.amount,
+          d.created_at,
+          customer.customer_name
+          FROM debt AS d
+          LEFT JOIN customer ON customer.id = d.customer_id
+          WHERE d.amount !=0 
+          ORDER BY d.created_at ASC
+          LIMIT 1;
+`;
 @Injectable()
 export class DebtRepo {
+  async selectPending() {
+    const res = await db.raw(selectPendingQuery);
+    return res.rows;
+  }
+  async selectOldest() {
+    const res = await db.raw(selectOldestQuery);
+    return res.rows;
+  }
+  async amountDebt(id: number) {
+    const res = await db.raw(amountDebtQuery, [id]);
+    return res.rows[0];
+  }
   async selectAllDebt() {
     const res = await db.raw(selectAllDebtQuery);
     return res.rows;
+  }
+  async selectRecent() {
+    const res = await db.raw(selectRecentQuery);
+    return res.rows[0];
   }
   async searchCustomer(name: string) {
     if (!name.trim()) return [];
@@ -89,6 +143,7 @@ export class DebtRepo {
         debt.item_barcode,
         debt.quantity,
         debt.customer_id,
+        debt.amount,
         debt.amount,
         debt.description,
       ]);
