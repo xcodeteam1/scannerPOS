@@ -1,3 +1,4 @@
+import * as dotenv from 'dotenv';
 import {
   Body,
   Controller,
@@ -8,11 +9,16 @@ import {
   Post,
   Put,
   Query,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from 'src/common/middleware/multer.config';
+dotenv.config();
 
 @ApiTags('Product')
 @Controller('product')
@@ -39,18 +45,71 @@ export class ProductController {
 
   @HttpCode(201)
   @Post('create')
-  @ApiBody({ type: CreateProductDto })
-  createProductCont(@Body() body: CreateProductDto) {
-    return this.service.createProduct(body);
+  @UseInterceptors(FilesInterceptor('images', 10, multerConfig))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        barcode: { type: 'string' },
+        name: { type: 'string' },
+        branch_id: { type: 'number' },
+        price: { type: 'number' },
+        stock: { type: 'number' },
+        description: { type: 'string' },
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
+  async createProductCont(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() body: CreateProductDto,
+  ) {
+    const imageUrls = files.map(
+      (file) => `${process.env.BACKEND_URL}/${file?.filename}`,
+    );
+    return this.service.createProduct({ ...body, imageUrls });
   }
+
   @HttpCode(201)
   @Put('/update/:barcode')
-  @ApiBody({ type: UpdateProductDto })
+  @UseInterceptors(FilesInterceptor('images', 10, multerConfig))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        barcode: { type: 'string' },
+        name: { type: 'string' },
+        branch_id: { type: 'number' },
+        price: { type: 'number' },
+        stock: { type: 'number' },
+        description: { type: 'string' },
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
   updateProduct(
+    @UploadedFiles() files: Express.Multer.File[],
     @Param('barcode') barcode: string,
     @Body() body: UpdateProductDto,
   ) {
-    return this.service.updateProduct(barcode, body);
+    const imageUrls = files.map(
+      (file) => `${process.env.BACKEND_URL}/${file?.filename}`,
+    );
+    return this.service.updateProduct(barcode, { ...body, imageUrls });
   }
   @HttpCode(200)
   @Delete('/delete/:barcode')

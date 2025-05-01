@@ -7,8 +7,25 @@ import { SaleModule } from './sale/sale.module';
 import { DebtModule } from './debt/debt.module';
 import { ReturnModule } from './return/return.module';
 import { CustomerModule } from './customer/customer.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { MulterModule } from '@nestjs/platform-express';
+import { multerConfig } from './common/middleware/multer.config';
 
 @Module({
-  imports: [AdminModule, BranchModule, CashierModule, ProductModule, SaleModule, DebtModule, ReturnModule, CustomerModule],
+  imports: [
+    AdminModule,
+    BranchModule,
+    CashierModule,
+    ProductModule,
+    SaleModule,
+    DebtModule,
+    ReturnModule,
+    CustomerModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
+    MulterModule.register(multerConfig), // Multer config ni registratsiya qilamiz
+  ],
 })
 export class AppModule {}

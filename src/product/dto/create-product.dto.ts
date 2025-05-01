@@ -36,4 +36,7 @@ export class CreateProductDto {
   @IsDefined({ message: 'description property mavjud bolishi shart' })
   @IsString()
   description: string;
+
+  @ApiProperty({ type: [String], required: false })
+  imageUrls?: string[];
 }

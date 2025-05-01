@@ -32,6 +32,7 @@ export class ProductService {
     price: number;
     stock: number;
     description: string;
+    imageUrls?: string[];
   }) {
     const result1 = await this.productRepo.selectByIDProduct(data.barcode);
     if (result1)
@@ -56,8 +57,15 @@ export class ProductService {
       price: number;
       stock: number;
       description: string;
+      imageUrls?: string[];
     },
   ) {
+    const result1 = await this.productRepo.selectByIDProduct(barcode);
+    if (!result1)
+      throw new NotFoundException(
+        `product is not   found with id: ${data.barcode}`,
+      );
+
     const result2 = await this.branchRepo.selectByIDBranch(data.branch_id);
     if (!result2)
       throw new NotFoundException(

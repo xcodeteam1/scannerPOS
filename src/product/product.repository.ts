@@ -4,7 +4,7 @@ import knexConfig from '../../knexfile';
 const db = knex(knexConfig);
 
 const selectAllProductQuery: string = `
-        SELECT *FROM product LIMIT ? OFFSET ?;
+        SELECT *FROM product WHERE is_deleted = FALSE LIMIT ? OFFSET ?;
 `;
 
 const selectByIDProductQuery: string = `
@@ -13,17 +13,15 @@ const selectByIDProductQuery: string = `
 `;
 
 const searchProductQuery: string = `
- SELECT product.*, 
-       branch.name AS branch_name 
-FROM product
-JOIN branch ON branch.id = product.branch_id
-WHERE 
-  (
-    to_tsvector('simple', product.name) @@ plainto_tsquery(?)
-    OR product.name ILIKE ?
-  )
-  OR product.barcode ILIKE ?;
-
+    SELECT product.*, branch.name AS branch_name
+    FROM product
+    JOIN branch ON branch.id = product.branch_id
+    WHERE is_deleted = FALSE
+      AND (
+        to_tsvector('simple', product.name) @@ plainto_tsquery(?)
+        OR product.name ILIKE ?
+        OR product.barcode ILIKE ?
+      );
 `;
 
 const createProductQuery: string = `
@@ -33,9 +31,10 @@ const createProductQuery: string = `
         branch_id,
         price,
         stock,
-        description
+        description,
+        image
         )
-         VALUES(?,?,?,?,?,?)
+         VALUES(?,?,?,?,?,?,?)
          RETURNING *;
 `;
 
@@ -48,13 +47,17 @@ const updateProductQuery: string = `
             price = ?,
             stock = ?,
             description = ?,
+            image = ?,
             updated_at = NOW()
         WHERE barcode = ?
         RETURNING *;
 `;
 
 const deleteProductQuery: string = `
-       UPDATE product SET is_deleted = TRUE WHERE barcode = ? RETURNING *;
+       UPDATE product 
+       SET is_deleted = TRUE 
+       WHERE barcode = ?
+       RETURNING *;
 `;
 
 @Injectable()
@@ -86,7 +89,10 @@ export class ProductRepo {
     price: number;
     stock: number;
     description: string;
+    imageUrls?: string[];
   }) {
+    const imageArrayPg = `{${data.imageUrls.join(',')}}`;
+
     const res = await db.raw(createProductQuery, [
       data.barcode,
       data.name,
@@ -94,6 +100,7 @@ export class ProductRepo {
       data.price,
       data.stock,
       data.description,
+      imageArrayPg,
     ]);
     return res.rows[0];
   }
@@ -106,8 +113,11 @@ export class ProductRepo {
       price: number;
       stock: number;
       description: string;
+      imageUrls?: string[];
     },
   ) {
+    const imageArrayPg = `{${data.imageUrls.join(',')}}`;
+
     const res = await db.raw(updateProductQuery, [
       data.barcode,
       data.name,
@@ -115,9 +125,9 @@ export class ProductRepo {
       data.price,
       data.stock,
       data.description,
+      imageArrayPg,
       barcode,
     ]);
-    console.log(res.rows);
     return res.rows[0];
   }
   async deleteProductQuery(barcode: string) {

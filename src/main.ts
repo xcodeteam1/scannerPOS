@@ -1,18 +1,39 @@
 import * as dotenv from 'dotenv';
+import * as path from 'path';
+import * as fs from 'fs';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express'; // ✅ MUHIM
+import { join } from 'path';
 
 dotenv.config();
 
+// public/images papkalarini avtomatik yaratish
+const publicFolderPath = path.join(__dirname, '..', 'public');
+const imagesFolderPath = path.join(publicFolderPath, 'images');
+
+if (!fs.existsSync(publicFolderPath)) {
+  fs.mkdirSync(publicFolderPath);
+  console.info('public folder created.');
+}
+if (!fs.existsSync(imagesFolderPath)) {
+  fs.mkdirSync(imagesFolderPath);
+  console.info('images folder created.');
+}
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors();
-  // Swagger konfiguratsiyasi
+
+  app.useStaticAssets(join(__dirname, '..', 'public', 'images'), {
+    prefix: '/public/images', // Bu yerda 'images' ga yo'naltirilgan
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Scanner-POS')
-    .setDescription('Scanner-POS documentation')
+    .setDescription('Scanner-POS API')
     .setVersion('1.0')
     .build();
 
@@ -21,12 +42,15 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // DTOda yoq propertylarni olib tashlaydi
-      forbidNonWhitelisted: true, // Notogri property topsa xatolik beradi
-      transform: true, // typelarni avtomatik `transform` qiladi
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true, // ← BU MUHIM
+      },
     }),
   );
 
-  await app.listen(process.env.PORT);
+  await app.listen(process.env.PORT || 3000);
 }
 bootstrap();
