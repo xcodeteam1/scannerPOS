@@ -13,15 +13,17 @@ const selectByIDProductQuery: string = `
 `;
 
 const searchProductQuery: string = `
-  SELECT product.*, 
-  branch.name AS branch_name 
-  FROM product
-  JOIN branch ON branch.id = product.branch_id
-  WHERE 
-    (
-      to_tsvector('simple', product.name) @@ plainto_tsquery(?)
-    )
-    OR product.barcode ILIKE ?;
+ SELECT product.*, 
+       branch.name AS branch_name 
+FROM product
+JOIN branch ON branch.id = product.branch_id
+WHERE 
+  (
+    to_tsvector('simple', product.name) @@ plainto_tsquery(?)
+    OR product.name ILIKE ?
+  )
+  OR product.barcode ILIKE ?;
+
 `;
 
 const createProductQuery: string = `
@@ -69,12 +71,14 @@ export class ProductRepo {
     return res.rows[0];
   }
   async searchProduct(q: string) {
-    if (!q.trim()) return [];
-
     const fullText = q; // plainto_tsquery uchun
     const ilikeText = `%${q}%`; // ILIKE uchun
 
-    const res = await db.raw(searchProductQuery, [fullText, ilikeText]);
+    const res = await db.raw(searchProductQuery, [
+      fullText,
+      ilikeText,
+      ilikeText,
+    ]);
     return res.rows;
   }
   async createProduct(data: {
