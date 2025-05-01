@@ -54,9 +54,7 @@ const updateProductQuery: string = `
 `;
 
 const deleteProductQuery: string = `
-        DELETE FROM product
-            WHERE barcode = ?
-            RETURNING *; 
+       UPDATE product SET is_deleted = TRUE WHERE barcode = ? RETURNING *;
 `;
 
 @Injectable()
