@@ -9,7 +9,8 @@ const selectAllProductQuery: string = `
 
 const selectByIDProductQuery: string = `
         SELECT *FROM product
-            WHERE barcode = ?;
+            WHERE barcode = ?
+            AND is_deleted = FALSE;
 `;
 
 const searchProductQuery: string = `
@@ -31,10 +32,11 @@ const createProductQuery: string = `
         branch_id,
         price,
         stock,
+        real_price,
         description,
         image
         )
-         VALUES(?,?,?,?,?,?,?)
+         VALUES(?,?,?,?,?,?,?,?)
          RETURNING *;
 `;
 
@@ -46,6 +48,7 @@ const updateProductQuery: string = `
             branch_id = ?,
             price = ?,
             stock = ?,
+            real_price = ?,
             description = ?,
             image = ?,
             updated_at = NOW()
@@ -89,6 +92,7 @@ export class ProductRepo {
     price: number;
     stock: number;
     description: string;
+    real_price: number;
     imageUrls?: string[];
   }) {
     const imageArrayPg = `{${data.imageUrls.join(',')}}`;
@@ -99,6 +103,7 @@ export class ProductRepo {
       data.branch_id,
       data.price,
       data.stock,
+      data.real_price,
       data.description,
       imageArrayPg,
     ]);
@@ -112,6 +117,7 @@ export class ProductRepo {
       branch_id: number;
       price: number;
       stock: number;
+      real_price: number;
       description: string;
       imageUrls?: string[];
     },
@@ -124,6 +130,7 @@ export class ProductRepo {
       data.branch_id,
       data.price,
       data.stock,
+      data.real_price,
       data.description,
       imageArrayPg,
       barcode,

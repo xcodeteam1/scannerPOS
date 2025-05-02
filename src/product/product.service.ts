@@ -31,6 +31,7 @@ export class ProductService {
     branch_id: number;
     price: number;
     stock: number;
+    real_price: number;
     description: string;
     imageUrls?: string[];
   }) {
@@ -56,6 +57,7 @@ export class ProductService {
       branch_id: number;
       price: number;
       stock: number;
+      real_price: number;
       description: string;
       imageUrls?: string[];
     },
@@ -77,7 +79,12 @@ export class ProductService {
   }
 
   async deleteProduct(barcode: string) {
-    const result = await this.productRepo.deleteProductQuery(barcode);
-    return result.length !== 0 ? 'succesfully deleting' : 'deleted';
+    const result1 = await this.productRepo.selectByIDProduct(barcode);
+    if (!result1)
+      throw new NotFoundException(
+        `product not  found with barcode: ${barcode}`,
+      );
+    await this.productRepo.deleteProductQuery(barcode);
+    return 'succesfully deleting';
   }
 }

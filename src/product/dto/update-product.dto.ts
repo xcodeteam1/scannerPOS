@@ -33,6 +33,12 @@ export class UpdateProductDto {
   stock: number;
 
   @ApiProperty()
+  @IsDefined({ message: 'real_price property mavjud bolishi shart' })
+  @IsNumber()
+  @IsNotEmpty({ message: 'real_price bosh bolmasligi kerak' })
+  real_price: number;
+
+  @ApiProperty()
   @IsDefined({ message: 'description property mavjud bolishi shart' })
   @IsString()
   description: string;

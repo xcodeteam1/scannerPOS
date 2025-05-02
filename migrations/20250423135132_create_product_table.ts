@@ -10,6 +10,7 @@ export async function up(knex: Knex): Promise<void> {
             stock INTEGER DEFAULT 1,
             image VARCHAR(100)[],
             is_deleted BOOLEAN DEFAULT FALSE,
+            real_price NUMERIC(15,2),
             description VARCHAR(255),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

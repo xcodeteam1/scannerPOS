@@ -27,6 +27,12 @@ export class CreateProductDto {
   price: number;
 
   @ApiProperty()
+  @IsDefined({ message: 'real_price property mavjud bolishi shart' })
+  @IsNumber()
+  @IsNotEmpty({ message: 'real_price bosh bolmasligi kerak' })
+  real_price: number;
+
+  @ApiProperty()
   @IsDefined({ message: 'stock property mavjud bolishi shart' })
   @IsNumber()
   @IsNotEmpty({ message: 'stock bosh bolmasligi kerak' })

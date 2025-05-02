@@ -55,6 +55,7 @@ export class ProductController {
         name: { type: 'string' },
         branch_id: { type: 'number' },
         price: { type: 'number' },
+        real_price: { type: 'number' },
         stock: { type: 'number' },
         description: { type: 'string' },
         images: {
@@ -90,6 +91,7 @@ export class ProductController {
         branch_id: { type: 'number' },
         price: { type: 'number' },
         stock: { type: 'number' },
+        real_price: { type: 'number' },
         description: { type: 'string' },
         images: {
           type: 'array',
