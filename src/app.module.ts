@@ -11,6 +11,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { MulterModule } from '@nestjs/platform-express';
 import { multerConfig } from './common/middleware/multer.config';
+import { MainModule } from './main/main.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { multerConfig } from './common/middleware/multer.config';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),
-    MulterModule.register(multerConfig), // Multer config ni registratsiya qilamiz
+    MulterModule.register(multerConfig),
+    MainModule, // Multer config ni registratsiya qilamiz
   ],
 })
 export class AppModule {}

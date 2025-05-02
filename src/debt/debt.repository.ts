@@ -66,7 +66,7 @@ const selectRecentQuery: string = `
         COALESCE(SUM(debt_amount), 0) AS all_amount ,
         COUNT(*) AS count_debt
         FROM debt
-        WHERE created_at != updated_at;
+        WHERE created_at != updated_at; --qarzni to'lagani uchun debt table o'zgaradi
 `;
 
 const amountDebtQuery: string = `
