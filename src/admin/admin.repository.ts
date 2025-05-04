@@ -21,7 +21,8 @@ const selectAllCashierQuery: string = `
             c.name,
             b.name AS branch_name
             FROM cashier AS c
-            LEFT JOIN branch AS b ON b.id = c.id;
+            LEFT JOIN branch AS b ON b.id = c.id
+            LIMIT ? OFFSET ?;
 `;
 const createAdminQuery: string = `
  INSERT INTO admin (login, password)
@@ -65,7 +66,19 @@ const deleteCashierQuery: string = `
             WHERE id = ?
             RETURNING *;
 `;
-
+const searchCashierQuery: string = `
+      SELECT 
+            c.id,
+            c.name,
+            b.name AS branch_name
+            FROM cashier AS c
+            LEFT JOIN branch AS b ON b.id = c.id
+      WHERE (
+      to_tsvector('simple', c.name) @@ plainto_tsquery('simple', ?)
+      OR c.name ILIKE ?
+      OR b.name ILIKE ?
+      );
+`;
 @Injectable()
 export class CashiersRepo {
   async selectByLoginAdmin(login: string) {
@@ -76,14 +89,27 @@ export class CashiersRepo {
     const res = await db.raw(selectByLoginCashierQuery, [login]);
     return res.rows;
   }
+  async searchCashier(name: string) {
+    const fullText = name;
+    const ilikeText = `%${name}%`;
+
+    const res = await db.raw(searchCashierQuery, [
+      fullText,
+      ilikeText,
+      ilikeText,
+    ]);
+    return res.rows;
+  }
 
   async createAdminIfNotExists(login: string, password: string) {
     const hashed = await hashPassword(password);
     const res = await db.raw(createAdminQuery, [login, hashed, login]);
     console.log(res.rows);
   }
-  async selectAllCashier() {
-    const res = await db.raw(selectAllCashierQuery);
+  async selectAllCashier(page: number, pageSize: number) {
+    const offset = (page - 1) * pageSize;
+
+    const res = await db.raw(selectAllCashierQuery, [pageSize, offset]);
     return res.rows;
   }
   async selectByIDCashier(id: number) {

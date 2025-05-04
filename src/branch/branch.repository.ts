@@ -4,7 +4,8 @@ import knexConfig from '../../knexfile';
 const db = knex(knexConfig);
 
 const selectAllBranchQuery: string = `
-    SELECT *FROM branch;
+    SELECT *FROM branch
+    LIMIT ? OFFSET ?;
 `;
 
 const selectByIDBranch: string = `
@@ -46,8 +47,10 @@ const searchBranchQUery: string = `
 
 @Injectable()
 export class BranchRepo {
-  async selectAllBranch() {
-    const res = await db.raw(selectAllBranchQuery);
+  async selectAllBranch(page: number, pageSize: number) {
+    const offset = (page - 1) * pageSize;
+
+    const res = await db.raw(selectAllBranchQuery, [pageSize, offset]);
     return res.rows;
   }
   async selectByIDBranch(id: number) {

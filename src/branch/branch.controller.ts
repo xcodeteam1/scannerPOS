@@ -13,6 +13,7 @@ import { BranchService } from './branch.service';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
+import { SelectAllBranchQueryDto } from './dto/select-all-branch.dto';
 
 @ApiTags('Branch')
 @Controller('branch')
@@ -21,8 +22,8 @@ export class BranchController {
 
   @HttpCode(200)
   @Get('all')
-  selectAllBranchCont() {
-    return this.service.selectAllBranch();
+  selectAllBranchCont(@Query() query: SelectAllBranchQueryDto) {
+    return this.service.selectAllBranch(query.page);
   }
 
   @HttpCode(200)

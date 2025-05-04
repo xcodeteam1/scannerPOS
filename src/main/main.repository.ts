@@ -79,6 +79,13 @@ export class MainRepo {
   }
   async selectDiagram() {
     const res = await db.raw(selectDiagramQuery);
-    return res.rows;
+    const sumAll: number = res.rows.reduce((acc: number, current: any) => {
+      return acc + Number(current.sum);
+    }, 0);
+    const result: any = res.rows.map((a: any) => {
+      const percent: string = String((a.sum / sumAll) * 100);
+      return { ...a, percent };
+    });
+    return result;
   }
 }

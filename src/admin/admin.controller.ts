@@ -7,12 +7,14 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { CreateCasheirDto } from './dto/create-cashier.dto';
 import { UpdateCasheirDto } from './dto/update-cashier.dto';
 import { LoginDto } from './dto/login.dto';
+import { SelectAllCashierQueryDto } from './dto/select-all-cashier.dto';
 
 @ApiTags('Login')
 @Controller('auth')
@@ -32,9 +34,16 @@ export class AdminController {
   constructor(private readonly service: AdminService) {}
   @HttpCode(200)
   @Get('all')
-  selectAllCashierCont() {
-    return this.service.selectAllCashier();
+  selectAllCashierCont(@Param() query: SelectAllCashierQueryDto) {
+    return this.service.selectAllCashier(query.page);
   }
+
+  @HttpCode(200)
+  @Get('search-cashier')
+  searchCashierCont(@Query('name') name: string) {
+    return this.service.searchCashier(name);
+  }
+
   @HttpCode(200)
   @Get(':id')
   selectByIDCashierCont(@Param('id') id: number) {

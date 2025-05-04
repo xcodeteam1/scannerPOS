@@ -25,14 +25,19 @@ export class AdminService {
     const { password, ...safeUser } = user;
     return { user: safeUser, token };
   }
-  async selectAllCashier() {
+  async selectAllCashier(page: number) {
+    const pageSize = 10;
+
     await this.cashiersRepo.createAdminIfNotExists('admin', 'admin123');
-    return await this.cashiersRepo.selectAllCashier();
+    return await this.cashiersRepo.selectAllCashier(page, pageSize);
   }
   async selectByIDCashier(id: number) {
     const result = await this.cashiersRepo.selectByIDCashier(id);
     if (!result) throw new NotFoundException('cashier not found');
     return result;
+  }
+  async searchCashier(name: string) {
+    return await this.cashiersRepo.searchCashier(name);
   }
   async createCashier(data: {
     name: string;
