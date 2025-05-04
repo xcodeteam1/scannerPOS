@@ -10,7 +10,7 @@ export class ProductService {
   ) {}
 
   async selectAllProduct(page: number) {
-    const pageSize = 20;
+    const pageSize = 10;
     return await this.productRepo.selectAllProduct(page, pageSize);
   }
 
