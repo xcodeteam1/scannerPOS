@@ -4,7 +4,7 @@ import knexConfig from '../../knexfile';
 const db = knex(knexConfig);
 
 const selectAllProductQuery: string = `
-        SELECT *FROM product WHERE is_deleted = FALSE LIMIT ? OFFSET ?;
+        SELECT *FROM product  LIMIT ? OFFSET ?;
 `;
 
 const selectByIDProductQuery: string = `
