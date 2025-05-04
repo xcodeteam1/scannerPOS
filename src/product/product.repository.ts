@@ -9,16 +9,14 @@ const selectAllProductQuery: string = `
 
 const selectByIDProductQuery: string = `
         SELECT *FROM product
-            WHERE barcode = ?
-            AND is_deleted = FALSE;
+            WHERE barcode = ?;
 `;
 
 const searchProductQuery: string = `
     SELECT product.*, branch.name AS branch_name
     FROM product
     JOIN branch ON branch.id = product.branch_id
-    WHERE is_deleted = FALSE
-      AND (
+    WHERE  (
         to_tsvector('simple', product.name) @@ plainto_tsquery(?)
         OR product.name ILIKE ?
         OR product.barcode ILIKE ?
@@ -57,8 +55,7 @@ const updateProductQuery: string = `
 `;
 
 const deleteProductQuery: string = `
-       UPDATE product 
-       SET is_deleted = TRUE 
+     DELETE FROM product
        WHERE barcode = ?
        RETURNING *;
 `;

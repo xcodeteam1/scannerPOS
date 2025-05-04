@@ -35,6 +35,15 @@ const deleteBranchQuery: string = `
       WHERE id = ? 
       RETURNING *; 
 `;
+
+const searchBranchQUery: string = `
+    SELECT * FROM branch
+    WHERE (
+        to_tsvector('simple', name) @@ plainto_tsquery('simple', ?)
+        OR name ILIKE ?
+    );
+`;
+
 @Injectable()
 export class BranchRepo {
   async selectAllBranch() {
@@ -44,6 +53,12 @@ export class BranchRepo {
   async selectByIDBranch(id: number) {
     const res = await db.raw(selectByIDBranch, [id]);
     return res.rows[0];
+  }
+  async searchBranch(name: string) {
+    const fullText = name; // plainto_tsquery uchun
+    const ilikeText = `%${name}%`; // ILIKE uchun
+    const res = await db.raw(searchBranchQUery, [fullText, ilikeText]);
+    return res.rows;
   }
   async createBranch(data: { name: string; address: string; contact: string }) {
     const res = await db.raw(createBranchQuery, [

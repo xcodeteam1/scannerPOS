@@ -17,6 +17,13 @@ export class DebtService {
   async selectOldest() {
     return await this.debtRepo.selectOldest();
   }
+  async amountAllDebt(customer_id: number) {
+    const customer = await this.customerRepo.selectByIDCustomer(customer_id);
+    if (!customer) {
+      throw new NotFoundException(`customer not found with id: ${customer_id}`);
+    }
+    return await this.debtRepo.amountAllDebt(customer_id);
+  }
   async amountDebt(id: number) {
     return await this.debtRepo.amountDebt(id);
   }
@@ -28,6 +35,9 @@ export class DebtService {
   }
   async searchDebt(name: string) {
     return await this.debtRepo.searchCustomer(name);
+  }
+  async debtHIstoryByCustomer(customer_id: number) {
+    return await this.debtRepo.debtHIstoryByCustomer(customer_id);
   }
   async createDebt(data: CreateDebtDto[]) {
     for (const debt of data) {

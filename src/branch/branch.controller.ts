@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { BranchService } from './branch.service';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
@@ -23,11 +24,19 @@ export class BranchController {
   selectAllBranchCont() {
     return this.service.selectAllBranch();
   }
+
+  @HttpCode(200)
+  @Get('search')
+  searchBranchCont(@Query('name') name: string) {
+    return this.service.searchBranch(name);
+  }
+
   @HttpCode(200)
   @Get(':id')
   selectByIDBranchCont(@Param('id') id: number) {
     return this.service.selectByIDBranch(id);
   }
+
   @HttpCode(201)
   @Post('create')
   @ApiBody({ type: CreateBranchDto })

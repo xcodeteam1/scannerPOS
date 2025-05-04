@@ -30,9 +30,10 @@ const deleteDebtQuery: string = `
         RETURNING *;
 `;
 
-const selectAllDebtQuery: string = `
+const debtHIstoryByCustomerQurey: string = `
         SELECT
           debt.id,
+          debt.customer_id,
           SUM(debt.amount) AS all_amount,
           customer.customer_name,
           product.name AS product_name,
@@ -40,6 +41,7 @@ const selectAllDebtQuery: string = `
         FROM debt
         LEFT JOIN customer ON customer.id = debt.customer_id
         LEFT JOIN product ON product.barcode = debt.item_barcode
+        WHERE debt.customer_id = ?
         GROUP BY 
             customer.customer_name, debt.created_at, product_name, debt.id;
 `;
@@ -74,7 +76,16 @@ const amountDebtQuery: string = `
           SET
           amount = 0,
           updated_at = NOW()
-        WHERE id = ?
+        WHERE id = ? --debt id 
+        RETURNING *;
+`;
+
+const amountAllDebtQuery: string = `
+        UPDATE debt 
+          SET
+          amount = 0,
+          updated_at = NOW()
+        WHERE customer_id = ?
         RETURNING *;
 `;
 
@@ -84,7 +95,17 @@ const selectPendingQuery: string = `
           SUM(CASE WHEN amount != 0.00 THEN 1 ELSE 0 END) AS count
         FROM debt;
   `;
-
+const selectAllDebtQuery: string = `
+        SELECT
+          d.customer_id,
+          c.customer_name,
+          COALESCE(SUM(d.debt_amount), 0) AS debt_amount, --buni api ga chiqarish kerak chunki o'chib ketmaydi
+          MAX(d.created_at) AS last_debt_time --yaqinda olgan qarzi
+        FROM debt d
+        LEFT JOIN customer c ON c.id = d.customer_id
+        GROUP BY d.customer_id, c.customer_name
+        ORDER BY last_debt_time DESC;
+`;
 const selectOldestQuery: string = `
           SELECT 
           d.id,
@@ -107,6 +128,10 @@ export class DebtRepo {
     const res = await db.raw(selectOldestQuery);
     return res.rows;
   }
+  async amountAllDebt(customer_id: number) {
+    const res = await db.raw(amountAllDebtQuery, [customer_id]);
+    return res.rows[0];
+  }
   async amountDebt(id: number) {
     const res = await db.raw(amountDebtQuery, [id]);
     return res.rows[0];
@@ -118,6 +143,11 @@ export class DebtRepo {
   async selectRecent() {
     const res = await db.raw(selectRecentQuery);
     return res.rows[0];
+  }
+  // hamma qarzlarini qaytaradi
+  async debtHIstoryByCustomer(customer_id: number) {
+    const res = await db.raw(debtHIstoryByCustomerQurey, [customer_id]);
+    return res.rows;
   }
   async searchCustomer(name: string) {
     if (!name.trim()) return [];

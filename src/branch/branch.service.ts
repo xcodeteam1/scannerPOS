@@ -14,7 +14,9 @@ export class BranchService {
     if (!result) throw new NotFoundException(`branch not found with id: ${id}`);
     return result;
   }
-
+  async searchBranch(name: string) {
+    return await this.branchRepo.searchBranch(name);
+  }
   async createBranch(data: { name: string; address: string; contact: string }) {
     const result = await this.branchRepo.createBranch(data);
     return result;

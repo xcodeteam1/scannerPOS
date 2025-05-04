@@ -30,6 +30,12 @@ export class DebtController {
   }
 
   @HttpCode(201)
+  @Put('update-all-amount/:customer_id')
+  amountAllDebtCont(@Param('customer_id') customer_id: number) {
+    return this.service.amountAllDebt(customer_id);
+  }
+
+  @HttpCode(201)
   @Put('update-amount/:id')
   amountDebtCont(@Param('id') id: number) {
     return this.service.amountDebt(id);
@@ -42,11 +48,16 @@ export class DebtController {
   }
 
   @HttpCode(200)
+  @Get('debt-history/:customer_id')
+  debtHIstoryByCustomerCont(@Param('customer_id') customer_id: number) {
+    return this.service.debtHIstoryByCustomer(customer_id);
+  }
+
+  @HttpCode(200)
   @Get('recent')
   selectRecentCont() {
     return this.service.selectRecent();
   }
-
   @HttpCode(200)
   @Get('search')
   searchDebtCont(@Query('name') name: string) {

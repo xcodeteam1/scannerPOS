@@ -4,7 +4,7 @@ export async function up(knex: Knex): Promise<void> {
   return knex.raw(`
         CREATE TABLE IF NOT EXISTS debt(
         id SERIAL PRIMARY KEY,
-        item_barcode VARCHAR(50) REFERENCES product(barcode),
+        item_barcode VARCHAR(50),
         quantity INTEGER DEFAULT 1,
         customer_id INTEGER REFERENCES customer(id),
         amount NUMERIC(15,2),

@@ -16,7 +16,7 @@ export class ReturnService {
     const result1 = await this.productRepo.selectByIDProduct(data.item_barcode);
     if (!result1)
       throw new NotFoundException(
-        `product is  found with id: ${data.item_barcode}`,
+        `product is not found with barcode: ${data.item_barcode}`,
       );
 
     const result = await this.returnRepo.createReturn(data);
