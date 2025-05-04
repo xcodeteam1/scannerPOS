@@ -18,6 +18,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/common/middleware/multer.config';
+import { SelectAllProductQueryDto } from './dto/select-all-product.dto';
 dotenv.config();
 
 @ApiTags('Product')
@@ -27,8 +28,8 @@ export class ProductController {
 
   @HttpCode(200)
   @Get('all')
-  selectAllProductCont(@Query('page') page: number = 1) {
-    return this.service.selectAllProduct(page);
+  selectAllProductCont(@Query() query: SelectAllProductQueryDto) {
+    return this.service.selectAllProduct(query.page);
   }
 
   @HttpCode(200)
