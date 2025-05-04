@@ -11,6 +11,7 @@ import {
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { DebtService } from './debt.service';
 import { CreateDebtDto } from './dto/create-debt.dto';
+import { SelectAllDebtQueryDto } from './dto/select-all-debt.dto';
 
 @ApiTags('Debt')
 @Controller('debt')
@@ -43,8 +44,8 @@ export class DebtController {
 
   @HttpCode(200)
   @Get('all')
-  selectAllDebtCont() {
-    return this.service.selectAllDebt();
+  selectAllDebtCont(@Query() query: SelectAllDebtQueryDto) {
+    return this.service.selectAllDebt(query.page);
   }
 
   @HttpCode(200)

@@ -104,7 +104,8 @@ const selectAllDebtQuery: string = `
         FROM debt d
         LEFT JOIN customer c ON c.id = d.customer_id
         GROUP BY d.customer_id, c.customer_name
-        ORDER BY last_debt_time DESC;
+        ORDER BY last_debt_time DESC
+        LIMIT ? OFFSET ?;
 `;
 const selectOldestQuery: string = `
           SELECT 
@@ -136,8 +137,9 @@ export class DebtRepo {
     const res = await db.raw(amountDebtQuery, [id]);
     return res.rows[0];
   }
-  async selectAllDebt() {
-    const res = await db.raw(selectAllDebtQuery);
+  async selectAllDebt(page: number, pageSize: number) {
+    const offset = (page - 1) * pageSize;
+    const res = await db.raw(selectAllDebtQuery, [pageSize, offset]);
     return res.rows;
   }
   async selectRecent() {
