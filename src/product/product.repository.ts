@@ -62,7 +62,7 @@ const deleteProductQuery: string = `
 
 @Injectable()
 export class ProductRepo {
-  async selectAllProduct(page: number = 1, pageSize: number) {
+  async selectAllProduct(page: number, pageSize: number) {
     const offset = (page - 1) * pageSize;
     const res = await db.raw(selectAllProductQuery, [pageSize, offset]);
     return res.rows;
