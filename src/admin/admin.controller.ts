@@ -33,9 +33,9 @@ export class LoginController {
 export class AdminController {
   constructor(private readonly service: AdminService) {}
   @HttpCode(200)
-  @Get('all')
+  @Get('list')
   selectAllCashierCont(@Param() query: SelectAllCashierQueryDto) {
-    return this.service.selectAllCashier(query.page);
+    return this.service.selectAllCashier(query.page, query.pageSize);
   }
 
   @HttpCode(200)

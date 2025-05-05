@@ -8,7 +8,7 @@ import { CreateCustomerDto } from './dto/create-customer.dto';
 export class CustomerController {
   constructor(private readonly service: CustomerService) {}
   @HttpCode(200)
-  @Get('all')
+  @Get('list')
   selectAllProductCont() {
     return this.service.selectCustomer();
   }

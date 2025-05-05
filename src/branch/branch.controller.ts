@@ -21,9 +21,9 @@ export class BranchController {
   constructor(private readonly service: BranchService) {}
 
   @HttpCode(200)
-  @Get('all')
+  @Get('list')
   selectAllBranchCont(@Query() query: SelectAllBranchQueryDto) {
-    return this.service.selectAllBranch(query.page);
+    return this.service.selectAllBranch(query.page, query.pageSize);
   }
 
   @HttpCode(200)

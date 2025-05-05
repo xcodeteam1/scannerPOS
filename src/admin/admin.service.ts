@@ -25,9 +25,7 @@ export class AdminService {
     const { password, ...safeUser } = user;
     return { user: safeUser, token };
   }
-  async selectAllCashier(page: number) {
-    const pageSize = 10;
-
+  async selectAllCashier(page: number, pageSize: number) {
     await this.cashiersRepo.createAdminIfNotExists('admin', 'admin123');
     return await this.cashiersRepo.selectAllCashier(page, pageSize);
   }

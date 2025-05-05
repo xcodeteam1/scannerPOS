@@ -5,8 +5,7 @@ import { BranchRepo } from './branch.repository';
 export class BranchService {
   constructor(private readonly branchRepo: BranchRepo) {}
 
-  async selectAllBranch(page: number) {
-    const pageSize = 10;
+  async selectAllBranch(page: number, pageSize: number) {
     return await this.branchRepo.selectAllBranch(page, pageSize);
   }
 

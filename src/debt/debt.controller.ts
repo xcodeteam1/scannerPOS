@@ -43,9 +43,9 @@ export class DebtController {
   }
 
   @HttpCode(200)
-  @Get('all')
+  @Get('list')
   selectAllDebtCont(@Query() query: SelectAllDebtQueryDto) {
-    return this.service.selectAllDebt(query.page);
+    return this.service.selectAllDebt(query.page, query.pageSize);
   }
 
   @HttpCode(200)

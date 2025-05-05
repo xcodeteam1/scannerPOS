@@ -27,9 +27,7 @@ export class DebtService {
   async amountDebt(id: number) {
     return await this.debtRepo.amountDebt(id);
   }
-  async selectAllDebt(page: number) {
-    const pageSize = 10;
-
+  async selectAllDebt(page: number, pageSize: number) {
     return await this.debtRepo.selectAllDebt(page, pageSize);
   }
   async selectRecent() {

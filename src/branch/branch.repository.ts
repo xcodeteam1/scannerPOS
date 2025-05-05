@@ -50,8 +50,29 @@ export class BranchRepo {
   async selectAllBranch(page: number, pageSize: number) {
     const offset = (page - 1) * pageSize;
 
-    const res = await db.raw(selectAllBranchQuery, [pageSize, offset]);
-    return res.rows;
+    // 1. Jami yozuvlar soni
+    const totalCountResult = await db.raw(`SELECT COUNT(*) FROM branch`);
+    const totalRecords = parseInt(totalCountResult.rows[0].count);
+
+    const dataResult = await db.raw(selectAllBranchQuery, [pageSize, offset]);
+    const data = dataResult.rows;
+
+    // 3. Paginatsiya hisoblash
+    const totalPages = Math.ceil(totalRecords / pageSize);
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+
+    // 4. Yakuniy natija
+    return {
+      data,
+      pagination: {
+        total_records: totalRecords,
+        current_page: page,
+        total_pages: totalPages,
+        next_page: nextPage,
+        prev_page: prevPage,
+      },
+    };
   }
   async selectByIDBranch(id: number) {
     const res = await db.raw(selectByIDBranch, [id]);

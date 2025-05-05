@@ -27,9 +27,9 @@ export class ProductController {
   constructor(private readonly service: ProductService) {}
 
   @HttpCode(200)
-  @Get('all')
+  @Get('list')
   selectAllProductCont(@Query() query: SelectAllProductQueryDto) {
-    return this.service.selectAllProduct(query.page);
+    return this.service.selectAllProduct(query.page, query.pageSize);
   }
 
   @HttpCode(200)
