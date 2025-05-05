@@ -16,14 +16,15 @@ const selectByLoginCashierQuery: string = `
     WHERE c.name = ?;
 `;
 const selectAllCashierQuery: string = `
-        SELECT 
-            c.id,
-            c.name,
-            b.name AS branch_name
-            FROM cashier AS c
-            LEFT JOIN branch AS b ON b.id = c.id
-            LIMIT ? OFFSET ?;
+SELECT 
+  c.id,
+  c.name,
+  b.name AS branch_name
+FROM cashier AS c
+LEFT JOIN branch AS b ON b.id = c.branch_id
+LIMIT ? OFFSET ?;
 `;
+
 const createAdminQuery: string = `
  INSERT INTO admin (login, password)
   SELECT ?, ?
