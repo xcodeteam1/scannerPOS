@@ -122,8 +122,8 @@ export class ProductRepo {
       data.price,
       data.stock,
       data.real_price,
-      data.description,
-      imageArrayPg,
+      data.description || null,
+      imageArrayPg || null,
     ]);
     return res.rows[0];
   }
