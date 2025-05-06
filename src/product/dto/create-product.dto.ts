@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsDefined,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty()
@@ -38,11 +44,13 @@ export class CreateProductDto {
   @IsNotEmpty({ message: 'stock bosh bolmasligi kerak' })
   stock: number;
 
+  @IsOptional()
   @ApiProperty()
   @IsDefined({ message: 'description property mavjud bolishi shart' })
   @IsString()
   description: string;
 
+  @IsOptional()
   @ApiProperty({ type: [String], required: false })
   imageUrls?: string[];
 }
