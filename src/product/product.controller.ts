@@ -110,9 +110,9 @@ export class ProductController {
     @Param('barcode') barcode: string,
     @Body() body: UpdateProductDto,
   ) {
-    const imageUrls = files.map(
-      (file) => `${process.env.BACKEND_URL}/${file?.filename}`,
-    );
+    const imageUrls = Array.isArray(files)
+      ? files.map((file) => `${process.env.BACKEND_URL}/${file?.filename}`)
+      : [];
     return this.service.updateProduct(barcode, { ...body, imageUrls });
   }
   @HttpCode(200)
