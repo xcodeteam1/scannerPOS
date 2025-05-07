@@ -73,9 +73,10 @@ export class ProductController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body() body: CreateProductDto,
   ) {
-    const imageUrls = files.map(
-      (file) => `${process.env.BACKEND_URL}/${file?.filename}`,
-    );
+    const imageUrls = Array.isArray(files)
+      ? files.map((file) => `${process.env.BACKEND_URL}/${file?.filename}`)
+      : [];
+
     return this.service.createProduct({ ...body, imageUrls });
   }
 
