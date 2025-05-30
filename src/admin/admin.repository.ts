@@ -23,8 +23,8 @@ SELECT
   b.name AS branch_name
 FROM cashier AS c
 LEFT JOIN branch AS b ON b.id = c.branch_id
-LIMIT ? OFFSET ?
-ORDER BY c.id;
+ORDER BY c.id
+LIMIT ? OFFSET ?;
 `;
 
 const createAdminQuery: string = `
