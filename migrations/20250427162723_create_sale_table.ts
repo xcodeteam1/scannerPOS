@@ -5,6 +5,7 @@ export async function up(knex: Knex): Promise<void> {
         CREATE TABLE IF NOT EXISTS sale(
         id SERIAL PRIMARY KEY,
         item_barcode VARCHAR(50),
+        cashier_id INTEGER REFERENCES cashier(id) ON DELETE SET NULL,
         price NUMERIC(15,2),
         quantity INTEGER DEFAULT 1,
         is_debt BOOLEAN DEFAULT FALSE,

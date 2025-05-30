@@ -18,9 +18,10 @@ const createSaleQuery: string = `
         item_barcode,
         price,
         quantity,
+        cashier_id,
         description
         )
-        VALUES(?,?,?,?)
+        VALUES(?,?,?,?,?)
         RETURNING *;
 `;
 
@@ -41,6 +42,7 @@ export class SaleRepo {
   async createSales(
     data: {
       item_barcode: string;
+      cashier_id: number;
       price: number;
       quantity: number;
       description: string;
@@ -53,6 +55,7 @@ export class SaleRepo {
         sale.item_barcode,
         sale.price,
         sale.quantity,
+        sale.cashier_id,
         sale.description,
       ]);
       await db.raw(updateProductQuantityQuery, [

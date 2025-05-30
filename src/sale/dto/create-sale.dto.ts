@@ -15,6 +15,12 @@ export class CreateSaleDto {
   price: number;
 
   @ApiProperty()
+  @IsDefined({ message: 'cashier_id property mavjud bolishi shart' })
+  @IsNumber()
+  @IsNotEmpty({ message: 'cashier_id bosh bolmasligi kerak' })
+  cashier_id: number;
+
+  @ApiProperty()
   @IsDefined({ message: 'quantity property mavjud bolishi shart' })
   @IsNumber()
   @IsNotEmpty({ message: 'quantity bosh bolmasligi kerak' })
