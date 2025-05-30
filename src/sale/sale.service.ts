@@ -11,7 +11,17 @@ export class SaleService {
   ) {}
 
   async selectDailySale() {
-    return await this.saleRepo.selectDailySale();
+    const result = await this.saleRepo.selectDailySale();
+    let sum = 0;
+
+    for (const res of result) {
+      sum += Number(res.cashier_price);
+    }
+
+    return {
+      data: result,
+      total_price: sum,
+    };
   }
 
   async createSale(data: CreateSaleDto[]) {

@@ -5,12 +5,16 @@ const db = knex(knexConfig);
 
 const selectDailySaleQurey: string = `
         SELECT
-        DATE(created_at) AS created_date,
-        SUM(COALESCE(price, 0)) AS total_price,
-        COUNT(*) AS total_order
+        SUM(COALESCE(sale.price, 0)) AS cashier_price,
+        COUNT(*) AS cashier_order,
+        cashier.name AS cashier_name,
+        branch.name AS branch_name
         FROM sale
-        WHERE DATE(created_at) = CURRENT_DATE AND is_debt = false
-        GROUP BY created_date;
+        LEFT JOIN cashier ON cashier.id = sale.cashier_id 
+        LEFT JOIN branch ON branch.id = cashier.branch_id
+        WHERE DATE(sale.created_at) = CURRENT_DATE AND sale.is_debt = false
+        GROUP BY  cashier.name, branch.name
+        ORDER BY cashier_price DESC;
 
 `;
 const createSaleQuery: string = `
