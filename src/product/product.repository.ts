@@ -5,8 +5,8 @@ const db = knex(knexConfig);
 
 const selectAllProductQuery: string = `
         SELECT *FROM product 
-        LIMIT ? OFFSET ?
-        ORDER BY id;
+        ORDER BY id
+        LIMIT ? OFFSET ?;
 `;
 
 const selectByIDProductQuery: string = `
