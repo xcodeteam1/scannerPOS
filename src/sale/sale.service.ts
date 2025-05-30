@@ -29,6 +29,12 @@ export class SaleService {
       const product = await this.productRepo.selectByIDProduct(
         sale.item_barcode,
       );
+      const cashier = await this.saleRepo.selectByIDCashier(sale.cashier_id);
+      if (cashier.length == 0) {
+        throw new NotFoundException(
+          `cashier not found with id: ${sale.cashier_id}`,
+        );
+      }
       if (!product) {
         throw new NotFoundException(
           `Product not found with barcode: ${sale.item_barcode}`,

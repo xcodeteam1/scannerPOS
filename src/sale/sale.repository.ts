@@ -36,11 +36,16 @@ const updateProductQuantityQuery: string = `
         WHERE barcode = ?
         RETURNING *;
 `;
-
+const selectByIDCashierQuery: string = `
+    SELECT *FROM cashier WHERE id = ?;`;
 @Injectable()
 export class SaleRepo {
   async selectDailySale() {
     const res = await db.raw(selectDailySaleQurey);
+    return res.rows;
+  }
+  async selectByIDCashier(id: number) {
+    const res = await db.raw(selectByIDCashierQuery, [id]);
     return res.rows;
   }
   async createSales(
