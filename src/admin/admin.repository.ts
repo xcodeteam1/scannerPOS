@@ -13,7 +13,8 @@ const selectByLoginCashierQuery: string = `
     branch.name AS branch_name 
     FROM cashier AS c
     LEFT JOIN branch ON branch.id = c.branch_id
-    WHERE c.name = ?;
+    WHERE c.name = ?
+    ORDER BY c.id;
 `;
 const selectAllCashierQuery: string = `
 SELECT 
@@ -22,7 +23,8 @@ SELECT
   b.name AS branch_name
 FROM cashier AS c
 LEFT JOIN branch AS b ON b.id = c.branch_id
-LIMIT ? OFFSET ?;
+LIMIT ? OFFSET ?
+ORDER BY c.id;
 `;
 
 const createAdminQuery: string = `

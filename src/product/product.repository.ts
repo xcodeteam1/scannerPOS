@@ -4,7 +4,9 @@ import knexConfig from '../../knexfile';
 const db = knex(knexConfig);
 
 const selectAllProductQuery: string = `
-        SELECT *FROM product  LIMIT ? OFFSET ?;
+        SELECT *FROM product 
+        LIMIT ? OFFSET ?
+        ORDER BY id;
 `;
 
 const selectByIDProductQuery: string = `

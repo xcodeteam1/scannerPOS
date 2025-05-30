@@ -13,7 +13,8 @@ const createCustomerQuery: string = `
         RETURNING *;
 `;
 const selectCustomerQuery: string = `
-        SELECT *FROM customer;
+        SELECT *FROM customer
+        ORDER BY id;
 `;
 const searchCustomerQuery: string = `
         SELECT *FROM customer 

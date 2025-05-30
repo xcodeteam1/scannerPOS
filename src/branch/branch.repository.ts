@@ -5,7 +5,8 @@ const db = knex(knexConfig);
 
 const selectAllBranchQuery: string = `
     SELECT *FROM branch
-    LIMIT ? OFFSET ?;
+    LIMIT ? OFFSET ?
+    ORDER BY branch.id;
 `;
 
 const selectByIDBranch: string = `
