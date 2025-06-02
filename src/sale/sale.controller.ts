@@ -17,8 +17,18 @@ export class SaleController {
   @ApiQuery({ name: 'q', required: true })
   @ApiQuery({ name: 'branch_id', required: false })
   @ApiQuery({ name: 'cashier_id', required: false })
-  @ApiQuery({ name: 'from', required: false, type: Date })
-  @ApiQuery({ name: 'to', required: false, type: Date })
+  @ApiQuery({
+    name: 'from',
+    required: false,
+    type: Date,
+    example: '2024-01-20',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: false,
+    type: Date,
+    example: '2026-01-20',
+  })
   @Get('search')
   search(
     @Query('q') q: string,
