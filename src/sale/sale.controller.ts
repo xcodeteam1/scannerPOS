@@ -1,5 +1,5 @@
-import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
+import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { SaleService } from './sale.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
 
@@ -12,6 +12,31 @@ export class SaleController {
   @Get('daily')
   selectAllProductCont() {
     return this.service.selectDailySale();
+  }
+
+  @ApiQuery({ name: 'q', required: true })
+  @ApiQuery({ name: 'branch_id', required: false })
+  @ApiQuery({ name: 'cashier_id', required: false })
+  @ApiQuery({ name: 'from', required: false, type: Date })
+  @ApiQuery({ name: 'to', required: false, type: Date })
+  @Get('search')
+  search(
+    @Query('q') q: string,
+    @Query('branch_id') branch_id?: number,
+    @Query('cashier_id') cashier_id?: number,
+    @Query('from') from?: Date,
+    @Query('to') to?: Date,
+  ) {
+    if (from && to) {
+      return this.service.searchDate(q, branch_id, cashier_id, from, to);
+    }
+    if (cashier_id) {
+      return this.service.searchBranchCashier(q, branch_id, cashier_id);
+    }
+    if (branch_id) {
+      return this.service.searchNameBranch(q, branch_id);
+    }
+    return this.service.searchNameBarcode(q);
   }
 
   @HttpCode(201)

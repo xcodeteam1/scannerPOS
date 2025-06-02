@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { SaleRepo } from './sale.repository';
 import { ProductRepo } from 'src/product/product.repository';
 import { CreateSaleDto } from './dto/create-sale.dto';
@@ -24,6 +28,54 @@ export class SaleService {
     };
   }
 
+  async searchNameBarcode(q: string) {
+    const result = await this.saleRepo.searchNameBarcode(q);
+    return result;
+  }
+
+  async searchNameBranch(q: string, branch_id: number) {
+    const result = await this.saleRepo.searchNameBarBranch(q, branch_id);
+    return result;
+  }
+  async searchBranchCashier(q: string, branch_id: number, cashier_id: number) {
+    if (!branch_id) {
+      throw new BadRequestException(
+        'send branch_id, without branch_id is not working this search query ',
+      );
+    }
+    const result = await this.saleRepo.searchBranchCashier(
+      q,
+      branch_id,
+      cashier_id,
+    );
+    return result;
+  }
+  async searchDate(
+    q: string,
+    branch_id: number,
+    cashier_id: number,
+    from: Date,
+    to: Date,
+  ) {
+    if (!branch_id) {
+      throw new BadRequestException(
+        'send branch_id, without branch_id is not working this search query ',
+      );
+    }
+    if (!cashier_id) {
+      throw new BadRequestException(
+        'send cashier, without cashier is not working this search query ',
+      );
+    }
+    const result = await this.saleRepo.searchDate(
+      q,
+      branch_id,
+      cashier_id,
+      from,
+      to,
+    );
+    return result;
+  }
   async createSale(data: CreateSaleDto[]) {
     for (const sale of data) {
       const product = await this.productRepo.selectByIDProduct(
