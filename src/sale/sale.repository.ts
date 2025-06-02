@@ -36,19 +36,19 @@ const updateProductQuantityQuery: string = `
         WHERE barcode = ?
         RETURNING *;
 `;
-
 const searchNameBarcodeQuery: string = `
-        SELECT 
-        sale.* ,
+      SELECT 
+        sale.*,
         product.name AS product_name,
-        cashier.id AS branch_id
-        FROM sale
-        JOIN product ON product.barcode = sale.item_barcode
-        JOIN cashier ON cashier.id = sale.cashier_id
-        WHERE  
-        to_tsvector('simple', sale.item_barcode) @@ plainto_tsquery(?)
-        OR to_tsvector('simple', product.name ) @@ plainto_tsquery(?);
+        cashier.branch_id
+      FROM sale
+      LEFT JOIN product ON product.barcode = sale.item_barcode
+      LEFT JOIN cashier ON cashier.id = sale.cashier_id
+      WHERE  
+        sale.item_barcode ILIKE ?
+        OR product.name ILIKE ?;
 `;
+
 const searchNameBarBranchQuery: string = `
         SELECT
         sale.* ,
@@ -58,8 +58,8 @@ const searchNameBarBranchQuery: string = `
         JOIN cashier ON cashier.id = sale.cashier_id
         WHERE  
         cashier.branch_id = ? 
-        AND (to_tsvector('simple', sale.item_barcode) @@ plainto_tsquery(?)
-        OR to_tsvector('simple', product.name ) @@ plainto_tsquery(?));
+        AND sale.item_barcode ILIKE ?
+        OR product.name ILIKE ?;
 `;
 
 const searchBranchCashierQuery: string = `
@@ -72,8 +72,8 @@ const searchBranchCashierQuery: string = `
         WHERE  
         cashier.branch_id = ? 
         AND cashier.id = ?
-        AND (to_tsvector('simple', sale.item_barcode) @@ plainto_tsquery(?)
-        OR to_tsvector('simple', product.name ) @@ plainto_tsquery(?));
+        ANDsale.item_barcode ILIKE ?
+        OR product.name ILIKE ?;
 `;
 
 const searchDateQuery: string = `
@@ -88,8 +88,8 @@ const searchDateQuery: string = `
         AND sale.created_at <=? --to
         AND cashier.branch_id = ? 
         AND cashier.id = ?
-        AND (to_tsvector('simple', sale.item_barcode) @@ plainto_tsquery(?)
-        OR to_tsvector('simple', product.name ) @@ plainto_tsquery(?));
+        AND sale.item_barcode ILIKE ?
+        OR product.name ILIKE ?;
 `;
 const selectByIDCashierQuery: string = `
     SELECT *FROM cashier WHERE id = ?;`;
@@ -100,20 +100,24 @@ export class SaleRepo {
     return res.rows;
   }
   async searchNameBarcode(q: string) {
-    const res = await db.raw(searchNameBarcodeQuery, [q, q]);
+    const res = await db.raw(searchNameBarcodeQuery, [`%${q}%`, `%${q}%`]);
     return res.rows;
   }
 
   async searchNameBarBranch(q: string, branch_id: number) {
-    const res = await db.raw(searchNameBarBranchQuery, [branch_id, q, q]);
+    const res = await db.raw(searchNameBarBranchQuery, [
+      branch_id,
+      `%${q}%`,
+      `%${q}%`,
+    ]);
     return res.rows;
   }
   async searchBranchCashier(q: string, branch_id: number, cashier_id: number) {
     const res = await db.raw(searchBranchCashierQuery, [
       cashier_id,
       branch_id,
-      q,
-      q,
+      `%${q}%`,
+      `%${q}%`,
     ]);
     return res.rows;
   }
@@ -129,8 +133,8 @@ export class SaleRepo {
       to,
       cashier_id,
       branch_id,
-      q,
-      q,
+      `%${q}%`,
+      `%${q}%`,
     ]);
 
     return res.rows;
