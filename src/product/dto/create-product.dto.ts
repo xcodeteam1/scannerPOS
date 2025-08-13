@@ -1,56 +1,56 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsDefined,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  Min,
 } from 'class-validator';
 
 export class CreateProductDto {
-  @ApiProperty()
-  @IsDefined({ message: 'barcode property mavjud bolishi shart' })
+  @ApiProperty({ example: '123456789', description: 'Product barcode' })
   @IsString()
-  @IsNotEmpty({ message: 'barcode bosh bolmasligi kerak' })
+  @IsNotEmpty()
   barcode: string;
 
-  @ApiProperty()
-  @IsDefined({ message: 'name property mavjud bolishi shart' })
+  @ApiProperty({ example: 'Laptop', description: 'Product name' })
   @IsString()
-  @IsNotEmpty({ message: 'name bosh bolmasligi kerak' })
+  @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
-  @IsDefined({ message: 'branch_id property mavjud bolishi shart' })
+  @ApiProperty({ example: 1, description: 'Branch ID' })
   @IsNumber()
-  @IsNotEmpty({ message: 'branch_id bosh bolmasligi kerak' })
   branch_id: number;
 
-  @ApiProperty()
-  @IsDefined({ message: 'price property mavjud bolishi shart' })
+  @ApiProperty({ example: 1500, description: 'Price' })
   @IsNumber()
-  @IsNotEmpty({ message: 'price bosh bolmasligi kerak' })
+  @Min(0)
   price: number;
 
-  @ApiProperty()
-  @IsDefined({ message: 'real_price property mavjud bolishi shart' })
+  @ApiProperty({ example: 1400, description: 'Real price' })
   @IsNumber()
-  @IsNotEmpty({ message: 'real_price bosh bolmasligi kerak' })
+  @Min(0)
   real_price: number;
 
-  @ApiProperty()
-  @IsDefined({ message: 'stock property mavjud bolishi shart' })
+  @ApiProperty({ example: 10, description: 'Stock quantity' })
   @IsNumber()
-  @IsNotEmpty({ message: 'stock bosh bolmasligi kerak' })
+  @Min(0)
   stock: number;
 
-  @IsOptional()
-  @ApiProperty()
-  @IsDefined({ message: 'description property mavjud bolishi shart' })
-  @IsString()
-  description: string;
+  @ApiProperty({ example: 2, description: 'Category ID' })
+  @IsNumber()
+  category_id: number;
 
+  @ApiProperty({ example: 'High-end gaming laptop', required: false })
+  @IsString()
   @IsOptional()
-  @ApiProperty({ type: [String], required: false })
+  description?: string;
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
+    required: false,
+  })
+  @IsOptional()
   imageUrls?: string[];
 }

@@ -28,13 +28,15 @@ async function bootstrap() {
   app.enableCors();
 
   app.useStaticAssets(join(__dirname, '..', 'public', 'images'), {
-    prefix: '/public/images', // Bu yerda 'images' ga yo'naltirilgan
+    prefix: '/public/images',
   });
 
   const config = new DocumentBuilder()
     .setTitle('Scanner-POS')
     .setDescription('Scanner-POS API')
     .setVersion('1.0')
+    .addServer('http://localhost:3000', 'local server')
+    .addServer('http://213.139.210.248:3000', 'production server')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -51,6 +53,8 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT || 3000);
+  await app.listen(process.env.PORT || 3000, () => {
+    console.log(`listened at http://localhost:${process.env.PORT}/swagger`);
+  });
 }
 bootstrap();

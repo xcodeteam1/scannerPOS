@@ -12,6 +12,7 @@ import { join } from 'path';
 import { MulterModule } from '@nestjs/platform-express';
 import { multerConfig } from './common/middleware/multer.config';
 import { MainModule } from './main/main.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { MainModule } from './main/main.module';
       rootPath: join(__dirname, '..', 'public'),
     }),
     MulterModule.register(multerConfig),
-    MainModule, // Multer config ni registratsiya qilamiz
+    MainModule,
+    CategoryModule,
   ],
 })
 export class AppModule {}

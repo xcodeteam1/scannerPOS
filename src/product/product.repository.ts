@@ -33,10 +33,11 @@ const createProductQuery: string = `
         price,
         stock,
         real_price,
+        category_id,
         description,
         image
         )
-         VALUES(?,?,?,?,?,?,?,?)
+         VALUES(?,?,?,?,?,?,?,?,?)
          RETURNING *;
 `;
 
@@ -49,6 +50,7 @@ const updateProductQuery: string = `
             price = ?,
             stock = ?,
             real_price = ?,
+            category_id = ?,
             description = ?,
             image = ?,
             updated_at = NOW()
@@ -110,6 +112,7 @@ export class ProductRepo {
     name: string;
     branch_id: number;
     price: number;
+    category_id: number;
     stock: number;
     description: string;
     real_price: number;
@@ -124,6 +127,7 @@ export class ProductRepo {
       data.price,
       data.stock,
       data.real_price,
+      data.category_id,
       data.description || null,
       imageArrayPg || null,
     ]);
@@ -138,6 +142,7 @@ export class ProductRepo {
       price: number;
       stock: number;
       real_price: number;
+      category_id: number;
       description: string;
       imageUrls?: string[];
     },
@@ -151,6 +156,7 @@ export class ProductRepo {
       data.price,
       data.stock,
       data.real_price,
+      data.category_id,
       data.description || null,
       imageArrayPg || null,
       barcode,
