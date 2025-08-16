@@ -10,8 +10,11 @@ export class CreateCategoryDto {
   @ApiProperty({
     example: 'All electronic products',
     description: 'Category description',
+    required: false,
   })
   @IsString()
   @IsOptional()
   description?: string;
+  @IsOptional()
+  imageUrls?: string[];
 }

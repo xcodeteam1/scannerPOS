@@ -17,15 +17,21 @@ export class CategoryService {
     return category;
   }
 
-  async createCategory(name: string, description: string) {
-    return await this.categoryRepo.createCategory(name, description);
+  async createCategory(name: string, description: string, imageUrls: string[]) {
+    return await this.categoryRepo.createCategory(name, description, imageUrls);
   }
 
-  async updateCategory(id: number, name: string, description: string) {
+  async updateCategory(
+    id: number,
+    name: string,
+    description: string,
+    imageUrls: string[],
+  ) {
     const updated = await this.categoryRepo.updateCategory(
       id,
       name,
       description,
+      imageUrls,
     );
     if (!updated) {
       throw new Error(`Category with id ${id} not found`);
@@ -33,6 +39,17 @@ export class CategoryService {
     return updated;
   }
 
+  async patchCategory(id: number, name?: string, description?: string) {
+    const patched = await this.categoryRepo.patchCategory(
+      id,
+      name,
+      description,
+    );
+    if (!patched) {
+      throw new Error(`Category with id ${id} not found`);
+    }
+    return patched;
+  }
   async deleteCategory(id: number) {
     const deleted = await this.categoryRepo.deleteCategory(id);
     if (!deleted) {

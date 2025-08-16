@@ -6,9 +6,10 @@ const db = knex(knexConfig);
 const createCategoryQuery: string = `
     INSERT INTO category(
         name,
-        description
+        description,
+        image       
     )
-    VALUES(?,?)
+    VALUES(?,?,?)
     RETURNING *;
 `;
 
@@ -24,7 +25,16 @@ const updateCategoryQuery: string = `
     UPDATE category
         SET
             name = ?,
-            description = ?
+            description = ?,
+            image = ?
+    WHERE id = ?
+    RETURNING *;
+`;
+const patchCategoryQuery: string = `
+    UPDATE category
+        SET
+            name = COALESCE(?, name),
+            description = COALESCE(?, description)
     WHERE id = ?
     RETURNING *;
 `;
@@ -47,20 +57,57 @@ export class CategoryRepo {
     return rows[0];
   }
 
-  async createCategory(name: string, description: string) {
+  async createCategory(
+    name: string,
+    description: string,
+    imageUrls?: string[],
+  ) {
     try {
-      const { rows } = await db.raw(createCategoryQuery, [name, description]);
+      const imageArrayPg = `{${imageUrls.join(',')}}`;
+
+      const safeDescription = description ?? '';
+      const { rows } = await db.raw(createCategoryQuery, [
+        name,
+        safeDescription,
+        imageArrayPg || null,
+      ]);
       return rows[0];
     } catch (error) {
       throw new Error(error.message);
     }
   }
 
-  async updateCategory(id: number, name: string, description: string) {
+  async updateCategory(
+    id: number,
+    name: string,
+    description: string,
+    imageUrls?: string[],
+  ) {
     try {
+      const imageArrayPg = `{${imageUrls.join(',')}}`;
+
+      const safeDescription = description ?? '';
+
       const { rows } = await db.raw(updateCategoryQuery, [
         name,
-        description,
+        safeDescription,
+        imageArrayPg || null,
+
+        id,
+      ]);
+      if (rows.length === 0) {
+        throw new Error(`Category with id ${id} not found`);
+      }
+      return rows[0];
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async patchCategory(id: number, name?: string, description?: string) {
+    try {
+      const { rows } = await db.raw(patchCategoryQuery, [
+        name ?? null,
+        description ?? null,
         id,
       ]);
       if (rows.length === 0) {

@@ -5,6 +5,7 @@ export async function up(knex: Knex): Promise<void> {
         CREATE TABLE IF NOT EXISTS category(
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
+        image VARCHAR(100)[],
         description TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
