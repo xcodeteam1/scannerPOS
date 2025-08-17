@@ -57,6 +57,21 @@ const updateProductQuery: string = `
         WHERE barcode = ?
         RETURNING *;
 `;
+const patchProductQuery = `
+    UPDATE product
+    SET
+        barcode = COALESCE(?, barcode),
+        name = COALESCE(?, name),
+        branch_id = COALESCE(?, branch_id),
+        price = COALESCE(?, price),
+        stock = COALESCE(?, stock),
+        real_price = COALESCE(?, real_price),
+        category_id = COALESCE(?, category_id),
+        description = COALESCE(?, description),
+        updated_at = NOW()
+    WHERE barcode = ?
+    RETURNING *;
+`;
 
 const deleteProductQuery: string = `
      DELETE FROM product
@@ -161,6 +176,33 @@ export class ProductRepo {
       imageArrayPg || null,
       barcode,
     ]);
+    return res.rows[0];
+  }
+  async patchProduct(
+    barcode: string,
+    data: {
+      barcode?: string;
+      name?: string;
+      branch_id?: number;
+      price?: number;
+      stock?: number;
+      real_price?: number;
+      category_id?: number;
+      description?: string;
+    },
+  ) {
+    const res = await db.raw(patchProductQuery, [
+      data.barcode ?? null,
+      data.name ?? null,
+      data.branch_id ?? null,
+      data.price ?? null,
+      data.stock ?? null,
+      data.real_price ?? null,
+      data.category_id ?? null,
+      data.description ?? null,
+      barcode,
+    ]);
+
     return res.rows[0];
   }
   async deleteProductQuery(barcode: string) {

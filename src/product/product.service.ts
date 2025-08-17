@@ -119,6 +119,56 @@ export class ProductService {
     });
   }
 
+  async patchProduct(
+    barcode: string,
+    dto: {
+      barcode?: string;
+      name?: string;
+      branch_id?: number;
+      price?: number;
+      stock?: number;
+      real_price?: number;
+      category_id?: number;
+      description?: string;
+    },
+  ) {
+    const product = await this.productRepo.selectByIDProduct(barcode);
+    if (!product) {
+      throw new NotFoundException(`Product not found with barcode: ${barcode}`);
+    }
+
+    if (dto.branch_id) {
+      const branch = await this.branchRepo.selectByIDBranch(dto.branch_id);
+      if (!branch) {
+        throw new NotFoundException(
+          `Branch not found with id: ${dto.branch_id}`,
+        );
+      }
+    }
+
+    if (dto.category_id) {
+      const category = await this.categoryRepo.selectByIDCategory(
+        dto.category_id,
+      );
+      if (!category) {
+        throw new NotFoundException(
+          `Category not found with id: ${dto.category_id}`,
+        );
+      }
+    }
+
+    return this.productRepo.patchProduct(barcode, {
+      barcode: dto.barcode ?? null,
+      name: dto.name ?? null,
+      branch_id: dto.branch_id ?? null,
+      price: dto.price ?? null,
+      stock: dto.stock ?? null,
+      real_price: dto.real_price ?? null,
+      category_id: dto.category_id ?? null,
+      description: dto.description ?? null,
+    });
+  }
+
   async deleteProduct(barcode: string) {
     const product = await this.productRepo.selectByIDProduct(barcode);
     if (!product) {

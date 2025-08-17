@@ -6,6 +6,7 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -19,6 +20,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/common/middleware/multer.config';
 import { SelectAllProductQueryDto } from './dto/select-all-product.dto';
+import { PatchProductDto } from './dto/patch-product.dto';
 dotenv.config();
 
 @ApiTags('Product')
@@ -116,6 +118,29 @@ export class ProductController {
       ? files.map((file) => `${process.env.BACKEND_URL}/${file?.filename}`)
       : [];
     return this.service.updateProduct(barcode, { ...body, imageUrls });
+  }
+  @HttpCode(200)
+  @Patch('/patch/:barcode')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        barcode: { type: 'string' },
+        name: { type: 'string' },
+        branch_id: { type: 'number' },
+        category_id: { type: 'number' },
+        price: { type: 'number' },
+        stock: { type: 'number' },
+        real_price: { type: 'number' },
+        description: { type: 'string' },
+      },
+    },
+  })
+  async patchProduct(
+    @Param('barcode') barcode: string,
+    @Body() body: PatchProductDto,
+  ) {
+    return this.service.patchProduct(barcode, body);
   }
   @HttpCode(200)
   @Delete('/delete/:barcode')
