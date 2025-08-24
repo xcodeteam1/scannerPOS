@@ -37,6 +37,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addServer('http://localhost:3000', 'local server')
     .addServer('http://213.139.210.248:3000', 'production server')
+    .addServer('http://87.236.23.149:3000', 'new production server')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
