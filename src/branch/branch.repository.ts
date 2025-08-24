@@ -75,6 +75,73 @@ export class BranchRepo {
       },
     };
   }
+  async getBranches(page: number, pageSize: number, q?: string) {
+    const offset = (page - 1) * pageSize;
+
+    let query: string;
+    let countQuery: string;
+    let params: any[] = [];
+
+    if (q) {
+      const fullText = q;
+      const ilikeText = `%${q}%`;
+
+      query = `
+        SELECT * FROM branch
+        WHERE (
+          to_tsvector('simple', name) @@ plainto_tsquery('simple', ?)
+          OR name ILIKE ?
+        )
+        ORDER BY branch.id
+        LIMIT ? OFFSET ?;
+      `;
+
+      countQuery = `
+        SELECT COUNT(*) FROM branch
+        WHERE (
+          to_tsvector('simple', name) @@ plainto_tsquery('simple', ?)
+          OR name ILIKE ?
+        );
+      `;
+
+      params = [fullText, ilikeText, pageSize, offset];
+    } else {
+      query = `
+        SELECT * FROM branch
+        ORDER BY branch.id
+        LIMIT ? OFFSET ?;
+      `;
+
+      countQuery = `SELECT COUNT(*) FROM branch;`;
+
+      params = [pageSize, offset];
+    }
+
+    const totalCountResult = q
+      ? await db.raw(countQuery, [q, `%${q}%`])
+      : await db.raw(countQuery);
+
+    const totalRecords = parseInt(totalCountResult.rows[0].count);
+
+    const dataResult = await db.raw(query, params);
+    const data = dataResult.rows;
+
+    const totalPages = Math.ceil(totalRecords / pageSize);
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+
+    return {
+      data,
+      pagination: {
+        total_records: totalRecords,
+        current_page: page,
+        total_pages: totalPages,
+        next_page: nextPage,
+        prev_page: prevPage,
+      },
+    };
+  }
+
   async selectByIDBranch(id: number) {
     const res = await db.raw(selectByIDBranch, [id]);
     return res.rows[0];

@@ -79,14 +79,15 @@ export class ProductService {
       imageUrls: dto.imageUrls ?? [],
     });
   }
-
   async updateProduct(barcode: string, dto: UpdateProductDto) {
+    // Avval mahsulotni tekshirib olamiz
     const product = await this.productRepo.selectByIDProduct(barcode);
     if (!product) {
       throw new NotFoundException(`Product not found with barcode: ${barcode}`);
     }
 
-    if (dto.branch_id) {
+    // Agar branch_id kelgan bo‘lsa, mavjudligini tekshiramiz
+    if (dto.branch_id !== undefined) {
       const branch = await this.branchRepo.selectByIDBranch(dto.branch_id);
       if (!branch) {
         throw new NotFoundException(
@@ -95,7 +96,8 @@ export class ProductService {
       }
     }
 
-    if (dto.category_id) {
+    // Agar category_id kelgan bo‘lsa, mavjudligini tekshiramiz
+    if (dto.category_id !== undefined) {
       const category = await this.categoryRepo.selectByIDCategory(
         dto.category_id,
       );
@@ -106,17 +108,8 @@ export class ProductService {
       }
     }
 
-    return this.productRepo.updateProduct(barcode, {
-      barcode: dto.barcode ?? barcode,
-      name: dto.name ?? product.name,
-      branch_id: dto.branch_id ?? product.branch_id,
-      price: dto.price ?? product.price,
-      stock: dto.stock ?? product.stock,
-      real_price: dto.real_price ?? product.real_price,
-      category_id: dto.category_id ?? product.category_id,
-      description: dto.description ?? product.description,
-      imageUrls: dto.imageUrls ?? product.image,
-    });
+    // Faqat kelgan fieldlarni repositoryga uzatamiz
+    return this.productRepo.updateProduct(barcode, dto);
   }
 
   async patchProduct(

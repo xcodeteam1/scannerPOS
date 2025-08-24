@@ -97,23 +97,28 @@ export class CategoryController {
   })
   async updateCategory(
     @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() images: Express.Multer.File[],
     @Body() dto: UpdateCategoryDto,
   ) {
-    const imageUrls = [
-      ...(Array.isArray(files)
-        ? files.map((file) => `${process.env.BACKEND_URL}/${file?.filename}`)
-        : []),
-      ...(dto.imageUrls || []),
-    ];
+    const uploadedImages = Array.isArray(images)
+      ? images.map((file) => `${process.env.BACKEND_URL}/${file?.filename}`)
+      : [];
 
-    return await this.categoryService.updateCategory(
-      id,
-      dto.name,
-      dto.description,
-      imageUrls,
-    );
+    const existingImages = dto.imageUrls || [];
+
+    const finalImageUrls =
+      uploadedImages.length > 0 || existingImages.length > 0
+        ? [...uploadedImages, ...existingImages]
+        : undefined;
+
+    const updateData: any = {};
+    if (dto.name) updateData.name = dto.name;
+    if (dto.description) updateData.description = dto.description;
+    if (finalImageUrls) updateData.imageUrls = finalImageUrls;
+
+    return await this.categoryService.updateCategory(id, updateData);
   }
+
   @HttpCode(200)
   @Patch(':id')
   async patchCategory(

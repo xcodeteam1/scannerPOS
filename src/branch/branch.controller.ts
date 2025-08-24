@@ -23,7 +23,7 @@ export class BranchController {
   @HttpCode(200)
   @Get('list')
   selectAllBranchCont(@Query() query: SelectAllBranchQueryDto) {
-    return this.service.selectAllBranch(query.page, query.pageSize);
+    return this.service.selectAllBranch(query.page, query.pageSize, query.q);
   }
 
   @HttpCode(200)

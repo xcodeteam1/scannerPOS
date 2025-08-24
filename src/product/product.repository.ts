@@ -151,33 +151,47 @@ export class ProductRepo {
   async updateProduct(
     barcode: string,
     data: {
-      barcode: string;
-      name: string;
-      branch_id: number;
-      price: number;
-      stock: number;
-      real_price: number;
-      category_id: number;
-      description: string;
+      barcode?: string;
+      name?: string;
+      branch_id?: number;
+      price?: number;
+      stock?: number;
+      real_price?: number;
+      category_id?: number;
+      description?: string;
       imageUrls?: string[];
     },
   ) {
-    const imageArrayPg = `{${data.imageUrls.join(',')}}`;
+    const updateData: any = {};
 
-    const res = await db.raw(updateProductQuery, [
-      data.barcode,
-      data.name,
-      data.branch_id,
-      data.price,
-      data.stock,
-      data.real_price,
-      data.category_id,
-      data.description || null,
-      imageArrayPg || null,
-      barcode,
-    ]);
-    return res.rows[0];
+    if (data.barcode !== undefined) updateData.barcode = data.barcode;
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.branch_id !== undefined) updateData.branch_id = data.branch_id;
+    if (data.price !== undefined) updateData.price = data.price;
+    if (data.stock !== undefined) updateData.stock = data.stock;
+    if (data.real_price !== undefined) updateData.real_price = data.real_price;
+    if (data.category_id !== undefined)
+      updateData.category_id = data.category_id;
+    if (data.description !== undefined)
+      updateData.description = data.description;
+    if (data.imageUrls !== undefined) updateData.image = data.imageUrls;
+
+    if (Object.keys(updateData).length === 0) {
+      throw new Error('Hech qanday field yuborilmadi!');
+    }
+
+    const [updated] = await db('product')
+      .where({ barcode })
+      .update(updateData)
+      .returning('*');
+
+    if (!updated) {
+      throw new Error(`Product with barcode ${barcode} not found`);
+    }
+
+    return updated;
   }
+
   async patchProduct(
     barcode: string,
     data: {

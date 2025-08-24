@@ -34,7 +34,8 @@ const patchCategoryQuery: string = `
     UPDATE category
         SET
             name = COALESCE(?, name),
-            description = COALESCE(?, description)
+            description = COALESCE(?, description),
+            updated_at = NOW()
     WHERE id = ?
     RETURNING *;
 `;
@@ -76,33 +77,33 @@ export class CategoryRepo {
       throw new Error(error.message);
     }
   }
-
   async updateCategory(
     id: number,
-    name: string,
-    description: string,
-    imageUrls?: string[],
+    data: { name?: string; description?: string; imageUrls?: string[] },
   ) {
-    try {
-      const imageArrayPg = `{${imageUrls.join(',')}}`;
+    const updateData: any = {};
 
-      const safeDescription = description ?? '';
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.description !== undefined)
+      updateData.description = data.description;
+    if (data.imageUrls !== undefined) updateData.image = data.imageUrls;
 
-      const { rows } = await db.raw(updateCategoryQuery, [
-        name,
-        safeDescription,
-        imageArrayPg || null,
-
-        id,
-      ]);
-      if (rows.length === 0) {
-        throw new Error(`Category with id ${id} not found`);
-      }
-      return rows[0];
-    } catch (error) {
-      throw new Error(error.message);
+    if (Object.keys(updateData).length === 0) {
+      throw new Error('Hech qanday field yuborilmadi!');
     }
+
+    const [updated] = await db('category')
+      .where({ id })
+      .update(updateData)
+      .returning('*');
+
+    if (!updated) {
+      throw new Error(`Category with id ${id} not found`);
+    }
+
+    return updated;
   }
+
   async patchCategory(id: number, name?: string, description?: string) {
     try {
       const { rows } = await db.raw(patchCategoryQuery, [

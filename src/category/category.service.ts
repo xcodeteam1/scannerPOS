@@ -23,19 +23,14 @@ export class CategoryService {
 
   async updateCategory(
     id: number,
-    name: string,
-    description: string,
-    imageUrls: string[],
+    data: { name?: string; description?: string; imageUrls?: string[] },
   ) {
-    const updated = await this.categoryRepo.updateCategory(
-      id,
-      name,
-      description,
-      imageUrls,
-    );
+    const updated = await this.categoryRepo.updateCategory(id, data);
+
     if (!updated) {
       throw new Error(`Category with id ${id} not found`);
     }
+
     return updated;
   }
 

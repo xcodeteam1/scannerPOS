@@ -82,8 +82,7 @@ export class ProductController {
 
     return this.service.createProduct({ ...body, imageUrls });
   }
-
-  @HttpCode(201)
+  @HttpCode(200)
   @Put('/update/:barcode')
   @UseInterceptors(FilesInterceptor('images', 10, multerConfig))
   @ApiConsumes('multipart/form-data')
@@ -101,23 +100,29 @@ export class ProductController {
         description: { type: 'string' },
         images: {
           type: 'array',
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
+          items: { type: 'string', format: 'binary' },
         },
       },
     },
   })
-  updateProduct(
+  async updateProduct(
     @UploadedFiles() files: Express.Multer.File[],
     @Param('barcode') barcode: string,
     @Body() body: UpdateProductDto,
   ) {
-    const imageUrls = Array.isArray(files)
+    // Yangi yuklangan rasmlar
+    const uploadedImages = Array.isArray(files)
       ? files.map((file) => `${process.env.BACKEND_URL}/${file?.filename}`)
       : [];
-    return this.service.updateProduct(barcode, { ...body, imageUrls });
+
+    // Faqat kelgan fieldlarni yig‘amiz
+    const updateData: any = { ...body };
+
+    if (uploadedImages.length > 0) {
+      updateData.imageUrls = uploadedImages;
+    }
+
+    return this.service.updateProduct(barcode, updateData);
   }
   @HttpCode(200)
   @Patch('/patch/:barcode')
