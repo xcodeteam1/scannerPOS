@@ -17,11 +17,11 @@ export class ProductService {
     private readonly categoryRepo: CategoryRepo,
   ) {}
 
-  async selectAllProduct(page: number, pageSize: number) {
+  async selectAllProduct(page: number, pageSize: number, q?: string) {
     if (page <= 0 || pageSize <= 0) {
       throw new BadRequestException('Page and pageSize must be greater than 0');
     }
-    return this.productRepo.selectAllProduct(page, pageSize);
+    return this.productRepo.getProducts(page, pageSize, q);
   }
 
   async selectByIDProduct(barcode: string) {

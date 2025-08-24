@@ -81,6 +81,78 @@ const deleteProductQuery: string = `
 
 @Injectable()
 export class ProductRepo {
+  async getProducts(page: number, pageSize: number, q?: string) {
+    const offset = (page - 1) * pageSize;
+
+    let totalCountResult, dataResult;
+
+    if (q && q.trim() !== '') {
+      const fullText = q;
+      const ilikeText = `%${q}%`;
+
+      totalCountResult = await db.raw(
+        `
+        SELECT COUNT(*) 
+        FROM product
+        JOIN branch ON branch.id = product.branch_id
+        WHERE (
+          to_tsvector('simple', product.name) @@ plainto_tsquery(?)
+          OR product.name ILIKE ?
+          OR product.barcode ILIKE ?
+        )
+        `,
+        [fullText, ilikeText, ilikeText],
+      );
+
+      dataResult = await db.raw(
+        `
+        SELECT product.*, branch.name AS branch_name
+        FROM product
+        JOIN branch ON branch.id = product.branch_id
+        WHERE (
+          to_tsvector('simple', product.name) @@ plainto_tsquery(?)
+          OR product.name ILIKE ?
+          OR product.barcode ILIKE ?
+        )
+        ORDER BY product.updated_at DESC
+        LIMIT ? OFFSET ?
+        `,
+        [fullText, ilikeText, ilikeText, pageSize, offset],
+      );
+    } else {
+      totalCountResult = await db.raw(`SELECT COUNT(*) FROM product`);
+
+      dataResult = await db.raw(
+        `
+        SELECT product.*, branch.name AS branch_name
+        FROM product
+        JOIN branch ON branch.id = product.branch_id
+        ORDER BY product.updated_at DESC
+        LIMIT ? OFFSET ?
+        `,
+        [pageSize, offset],
+      );
+    }
+
+    const totalRecords = parseInt(totalCountResult.rows[0].count);
+    const data = dataResult.rows;
+
+    const totalPages = Math.ceil(totalRecords / pageSize);
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+
+    return {
+      data,
+      pagination: {
+        total_records: totalRecords,
+        current_page: page,
+        total_pages: totalPages,
+        next_page: nextPage,
+        prev_page: prevPage,
+      },
+    };
+  }
+
   async selectAllProduct(page: number, pageSize: number) {
     const offset = (page - 1) * pageSize;
     // 1. Jami yozuvlar soni

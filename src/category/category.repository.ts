@@ -21,6 +21,15 @@ const selectByIDCategoryQuery: string = `
     SELECT * FROM category WHERE id = ?;
 `;
 
+const baseSelectCategoryQuery = `
+  SELECT * FROM category
+`;
+
+const searchCategoryQuery = `
+  SELECT * FROM category
+  WHERE id::text ILIKE ? OR name ILIKE ?
+`;
+
 const updateCategoryQuery: string = `
     UPDATE category
         SET
@@ -51,6 +60,46 @@ export class CategoryRepo {
   async selectCategory() {
     const { rows } = await db.raw(selectCategoryQuery);
     return rows;
+  }
+
+  async getCategories(page: number, pageSize: number, q?: string) {
+    const offset = (page - 1) * pageSize;
+
+    if (!q || !q.trim()) {
+      const totalRes = await db.raw(`SELECT COUNT(*) FROM category`);
+      const totalRecords = parseInt(totalRes.rows[0].count);
+
+      const dataRes = await db.raw(
+        `${baseSelectCategoryQuery} ORDER BY id LIMIT ? OFFSET ?`,
+        [pageSize, offset],
+      );
+      const totalPages = Math.ceil(totalRecords / pageSize);
+
+      return {
+        data: dataRes.rows,
+        pagination: {
+          total_records: totalRecords,
+          current_page: page,
+          total_pages: totalPages,
+          next_page: page < totalPages ? page + 1 : null,
+          prev_page: page > 1 ? page - 1 : null,
+        },
+      };
+    } else {
+      const ilikeText = `%${q}%`;
+      const res = await db.raw(searchCategoryQuery, [ilikeText, ilikeText]);
+
+      return {
+        data: res.rows,
+        pagination: {
+          total_records: res.rows.length,
+          current_page: 1,
+          total_pages: 1,
+          next_page: null,
+          prev_page: null,
+        },
+      };
+    }
   }
 
   async selectByIDCategory(id: number) {

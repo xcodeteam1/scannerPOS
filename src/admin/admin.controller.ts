@@ -34,8 +34,8 @@ export class AdminController {
   constructor(private readonly service: AdminService) {}
   @HttpCode(200)
   @Get('list')
-  selectAllCashierCont(@Param() query: SelectAllCashierQueryDto) {
-    return this.service.selectAllCashier(query.page, query.pageSize);
+  selectAllCashierCont(@Query() query: SelectAllCashierQueryDto) {
+    return this.service.selectAllCashier(query.page, query.pageSize, query.q);
   }
 
   @HttpCode(200)

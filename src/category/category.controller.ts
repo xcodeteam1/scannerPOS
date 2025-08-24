@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   UploadedFiles,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { CategoryService } from './category.service';
@@ -19,6 +20,7 @@ import { multerConfig } from 'src/common/middleware/multer.config';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { PatchCategoryDto } from './dto/patch-category.dto';
+import { GetCategoryDto } from './dto/get-category.dto';
 
 @ApiTags('Category')
 @Controller('category')
@@ -27,8 +29,12 @@ export class CategoryController {
 
   @HttpCode(200)
   @Get('list')
-  async getAllCategories() {
-    return await this.categoryService.selectCategory();
+  async getAllCategories(@Query() query: GetCategoryDto) {
+    return this.categoryService.getCategories(
+      query.page,
+      query.pageSize,
+      query.q,
+    );
   }
 
   @HttpCode(200)

@@ -2,6 +2,7 @@ import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { SaleService } from './sale.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
+import { SearchSalesDto } from './dto/search-sale.dto';
 
 @ApiTags('Sale')
 @Controller('sale')
@@ -30,23 +31,17 @@ export class SaleController {
     example: '2026-01-20',
   })
   @Get('search')
-  search(
-    @Query('q') q: string,
-    @Query('branch_id') branch_id?: number,
-    @Query('cashier_id') cashier_id?: number,
-    @Query('from') from?: Date,
-    @Query('to') to?: Date,
-  ) {
-    if (from && to) {
-      return this.service.searchDate(q, branch_id, cashier_id, from, to);
-    }
-    if (cashier_id) {
-      return this.service.searchBranchCashier(q, branch_id, cashier_id);
-    }
-    if (branch_id) {
-      return this.service.searchNameBranch(q, branch_id);
-    }
-    return this.service.searchNameBarcode(q);
+  @ApiQuery({ name: 'q', required: false, description: 'Qidiruv matni' })
+  search(@Query() query: SearchSalesDto) {
+    return this.service.getSales(
+      query.page,
+      query.pageSize,
+      query.q,
+      query.branch_id,
+      query.cashier_id,
+      query.from ? new Date(query.from) : undefined,
+      query.to ? new Date(query.to) : undefined,
+    );
   }
 
   @HttpCode(201)

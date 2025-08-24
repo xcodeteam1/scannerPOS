@@ -17,6 +17,10 @@ export class CategoryService {
     return category;
   }
 
+  getCategories(page: number, pageSize: number, q?: string) {
+    return this.categoryRepo.getCategories(page, pageSize, q);
+  }
+
   async createCategory(name: string, description: string, imageUrls: string[]) {
     return await this.categoryRepo.createCategory(name, description, imageUrls);
   }

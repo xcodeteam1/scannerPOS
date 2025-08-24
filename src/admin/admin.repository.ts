@@ -137,6 +137,88 @@ export class CashiersRepo {
       },
     };
   }
+  async getCashiers(page: number, pageSize: number, name?: string) {
+    const offset = (page - 1) * pageSize;
+
+    let dataResult;
+    let totalCountResult;
+
+    if (name && name.trim() !== '') {
+      // Agar qidiruv bo'lsa
+      const fullText = name;
+      const ilikeText = `%${name}%`;
+
+      // Jami qidirilgan yozuvlar soni
+      totalCountResult = await db.raw(
+        `
+        SELECT COUNT(*) 
+        FROM cashier AS c
+        LEFT JOIN branch AS b ON b.id = c.branch_id
+        WHERE (
+          to_tsvector('simple', c.name) @@ plainto_tsquery('simple', ?)
+          OR c.name ILIKE ?
+          OR b.name ILIKE ?
+        )
+        `,
+        [fullText, ilikeText, ilikeText],
+      );
+
+      // Qidiruv + pagination
+      dataResult = await db.raw(
+        `
+        SELECT 
+          c.id,
+          c.name,
+          b.name AS branch_name
+        FROM cashier AS c
+        LEFT JOIN branch AS b ON b.id = c.branch_id
+        WHERE (
+          to_tsvector('simple', c.name) @@ plainto_tsquery('simple', ?)
+          OR c.name ILIKE ?
+          OR b.name ILIKE ?
+        )
+        ORDER BY c.id
+        LIMIT ? OFFSET ?;
+        `,
+        [fullText, ilikeText, ilikeText, pageSize, offset],
+      );
+    } else {
+      // Oddiy list olish
+      totalCountResult = await db.raw(`SELECT COUNT(*) FROM cashier`);
+      dataResult = await db.raw(
+        `
+        SELECT 
+          c.id,
+          c.name,
+          b.name AS branch_name
+        FROM cashier AS c
+        LEFT JOIN branch AS b ON b.id = c.branch_id
+        ORDER BY c.id
+        LIMIT ? OFFSET ?;
+        `,
+        [pageSize, offset],
+      );
+    }
+
+    const totalRecords = parseInt(totalCountResult.rows[0].count);
+    const data = dataResult.rows;
+
+    // Paginatsiya hisoblash
+    const totalPages = Math.ceil(totalRecords / pageSize);
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+
+    return {
+      data,
+      pagination: {
+        total_records: totalRecords,
+        current_page: page,
+        total_pages: totalPages,
+        next_page: nextPage,
+        prev_page: prevPage,
+      },
+    };
+  }
 
   async selectByIDCashier(id: number) {
     const res = await db.raw(selectByIDCashierQuery, [id]);

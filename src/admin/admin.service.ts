@@ -25,10 +25,11 @@ export class AdminService {
     const { password, ...safeUser } = user;
     return { user: safeUser, token };
   }
-  async selectAllCashier(page: number, pageSize: number) {
+  async selectAllCashier(page: number, pageSize: number, q?: string) {
     await this.cashiersRepo.createAdminIfNotExists('admin', 'admin123');
-    return await this.cashiersRepo.selectAllCashier(page, pageSize);
+    return await this.cashiersRepo.getCashiers(page, pageSize, q);
   }
+
   async selectByIDCashier(id: number) {
     const result = await this.cashiersRepo.selectByIDCashier(id);
     if (!result) throw new NotFoundException('cashier not found');

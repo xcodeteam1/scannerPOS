@@ -31,7 +31,7 @@ export class ProductController {
   @HttpCode(200)
   @Get('list')
   selectAllProductCont(@Query() query: SelectAllProductQueryDto) {
-    return this.service.selectAllProduct(query.page, query.pageSize);
+    return this.service.selectAllProduct(query.page, query.pageSize, query.q);
   }
 
   @HttpCode(200)

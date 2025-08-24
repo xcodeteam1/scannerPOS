@@ -139,6 +139,158 @@ export class SaleRepo {
 
     return res.rows;
   }
+
+  async getSales(
+    page: number,
+    pageSize: number,
+    q?: string,
+    branch_id?: number,
+    cashier_id?: number,
+    from?: Date,
+    to?: Date,
+  ) {
+    const offset = (page - 1) * pageSize;
+
+    let totalCountResult, dataResult;
+
+    if (q && !branch_id && !cashier_id && !from && !to) {
+      totalCountResult = await db.raw(
+        `
+        SELECT COUNT(*) 
+        FROM sale
+        LEFT JOIN product ON product.barcode = sale.item_barcode
+        LEFT JOIN cashier ON cashier.id = sale.cashier_id
+        WHERE sale.item_barcode ILIKE ? OR product.name ILIKE ?;
+        `,
+        [`%${q}%`, `%${q}%`],
+      );
+
+      dataResult = await db.raw(
+        `
+        SELECT sale.*, product.name AS product_name, cashier.branch_id
+        FROM sale
+        LEFT JOIN product ON product.barcode = sale.item_barcode
+        LEFT JOIN cashier ON cashier.id = sale.cashier_id
+        WHERE sale.item_barcode ILIKE ? OR product.name ILIKE ?
+        ORDER BY sale.created_at DESC
+        LIMIT ? OFFSET ?;
+        `,
+        [`%${q}%`, `%${q}%`, pageSize, offset],
+      );
+    } else if (q && branch_id && !cashier_id && !from && !to) {
+      totalCountResult = await db.raw(
+        `
+        SELECT COUNT(*)
+        FROM sale
+        JOIN product ON product.barcode = sale.item_barcode
+        JOIN cashier ON cashier.id = sale.cashier_id
+        WHERE cashier.branch_id = ?
+        AND (sale.item_barcode ILIKE ? OR product.name ILIKE ?);
+        `,
+        [branch_id, `%${q}%`, `%${q}%`],
+      );
+
+      dataResult = await db.raw(
+        `
+        SELECT sale.*, product.name AS product_name
+        FROM sale
+        JOIN product ON product.barcode = sale.item_barcode
+        JOIN cashier ON cashier.id = sale.cashier_id
+        WHERE cashier.branch_id = ?
+        AND (sale.item_barcode ILIKE ? OR product.name ILIKE ?)
+        ORDER BY sale.created_at DESC
+        LIMIT ? OFFSET ?;
+        `,
+        [branch_id, `%${q}%`, `%${q}%`, pageSize, offset],
+      );
+    } else if (q && branch_id && cashier_id && !from && !to) {
+      totalCountResult = await db.raw(
+        `
+        SELECT COUNT(*)
+        FROM sale
+        JOIN product ON product.barcode = sale.item_barcode
+        JOIN cashier ON cashier.id = sale.cashier_id
+        WHERE cashier.branch_id = ? AND cashier.id = ?
+        AND (sale.item_barcode ILIKE ? OR product.name ILIKE ?);
+        `,
+        [branch_id, cashier_id, `%${q}%`, `%${q}%`],
+      );
+
+      dataResult = await db.raw(
+        `
+        SELECT sale.*, product.name AS product_name
+        FROM sale
+        JOIN product ON product.barcode = sale.item_barcode
+        JOIN cashier ON cashier.id = sale.cashier_id
+        WHERE cashier.branch_id = ? AND cashier.id = ?
+        AND (sale.item_barcode ILIKE ? OR product.name ILIKE ?)
+        ORDER BY sale.created_at DESC
+        LIMIT ? OFFSET ?;
+        `,
+        [branch_id, cashier_id, `%${q}%`, `%${q}%`, pageSize, offset],
+      );
+    } else if (q && branch_id && cashier_id && from && to) {
+      totalCountResult = await db.raw(
+        `
+        SELECT COUNT(*)
+        FROM sale
+        JOIN product ON product.barcode = sale.item_barcode
+        JOIN cashier ON cashier.id = sale.cashier_id
+        WHERE sale.created_at >= ? AND sale.created_at <= ?
+        AND cashier.branch_id = ? AND cashier.id = ?
+        AND (sale.item_barcode ILIKE ? OR product.name ILIKE ?);
+        `,
+        [from, to, branch_id, cashier_id, `%${q}%`, `%${q}%`],
+      );
+
+      dataResult = await db.raw(
+        `
+        SELECT sale.*, product.name AS product_name
+        FROM sale
+        JOIN product ON product.barcode = sale.item_barcode
+        JOIN cashier ON cashier.id = sale.cashier_id
+        WHERE sale.created_at >= ? AND sale.created_at <= ?
+        AND cashier.branch_id = ? AND cashier.id = ?
+        AND (sale.item_barcode ILIKE ? OR product.name ILIKE ?)
+        ORDER BY sale.created_at DESC
+        LIMIT ? OFFSET ?;
+        `,
+        [from, to, branch_id, cashier_id, `%${q}%`, `%${q}%`, pageSize, offset],
+      );
+    } else {
+      totalCountResult = await db.raw(`SELECT COUNT(*) FROM sale`);
+      dataResult = await db.raw(
+        `
+        SELECT sale.*, product.name AS product_name, cashier.branch_id
+        FROM sale
+        LEFT JOIN product ON product.barcode = sale.item_barcode
+        LEFT JOIN cashier ON cashier.id = sale.cashier_id
+        ORDER BY sale.created_at DESC
+        LIMIT ? OFFSET ?;
+        `,
+        [pageSize, offset],
+      );
+    }
+
+    const totalRecords = parseInt(totalCountResult.rows[0].count);
+    const data = dataResult.rows;
+
+    const totalPages = Math.ceil(totalRecords / pageSize);
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+
+    return {
+      data,
+      pagination: {
+        total_records: totalRecords,
+        current_page: page,
+        total_pages: totalPages,
+        next_page: nextPage,
+        prev_page: prevPage,
+      },
+    };
+  }
+
   async selectByIDCashier(id: number) {
     const res = await db.raw(selectByIDCashierQuery, [id]);
     return res.rows;

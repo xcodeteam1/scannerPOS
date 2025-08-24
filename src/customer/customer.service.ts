@@ -19,4 +19,8 @@ export class CustomerService {
     const result = await this.customerRepo.createCustomer(data);
     return result;
   }
+
+  getCustomers(page: number, pageSize: number, name?: string) {
+    return this.customerRepo.getCustomers(page, pageSize, name);
+  }
 }
