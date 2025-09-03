@@ -82,7 +82,7 @@ export class CategoryController {
   }
 
   @HttpCode(200)
-  @Put(':id')
+  @Put('/update/:id')
   @UseInterceptors(FilesInterceptor('images', 10, multerConfig))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -138,7 +138,7 @@ export class CategoryController {
     );
   }
   @HttpCode(200)
-  @Delete(':id')
+  @Delete('/delete/:id')
   async deleteCategory(@Param('id', ParseIntPipe) id: number) {
     return await this.categoryService.deleteCategory(id);
   }

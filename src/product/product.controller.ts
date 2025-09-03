@@ -62,6 +62,10 @@ export class ProductController {
         real_price: { type: 'number' },
         stock: { type: 'number' },
         description: { type: 'string' },
+        tegs: {
+          type: 'array',
+          items: { type: 'string', enum: ['new', 'hit', 'sale'] },
+        },
         images: {
           type: 'array',
           items: {
@@ -79,9 +83,11 @@ export class ProductController {
     const imageUrls = Array.isArray(files)
       ? files.map((file) => `${process.env.BACKEND_URL}/${file?.filename}`)
       : [];
-
+    console.log('hello');
+    console.log(body.tegs);
     return this.service.createProduct({ ...body, imageUrls });
   }
+
   @HttpCode(200)
   @Put('/update/:barcode')
   @UseInterceptors(FilesInterceptor('images', 10, multerConfig))
@@ -98,6 +104,10 @@ export class ProductController {
         stock: { type: 'number' },
         real_price: { type: 'number' },
         description: { type: 'string' },
+        tegs: {
+          type: 'array',
+          items: { type: 'string', enum: ['new', 'hit', 'sale'] },
+        },
         images: {
           type: 'array',
           items: { type: 'string', format: 'binary' },
@@ -125,7 +135,7 @@ export class ProductController {
     return this.service.updateProduct(barcode, updateData);
   }
   @HttpCode(200)
-  @Patch('/patch/:barcode')
+  // @Patch('/patch/:barcode')
   @ApiBody({
     schema: {
       type: 'object',

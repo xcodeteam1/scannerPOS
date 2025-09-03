@@ -2,7 +2,7 @@ import { IsInt, Min, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
-export class SelectAllBranchQueryDto {
+export class SelectAllNotificationQueryDto {
   @ApiPropertyOptional({ example: 1 })
   @IsOptional()
   @Type(() => Number)
@@ -16,12 +16,4 @@ export class SelectAllBranchQueryDto {
   @IsInt({ message: 'pageSize must be an integer' })
   @Min(1, { message: 'pageSize must be at least 1' })
   pageSize?: number = 10;
-
-  @ApiPropertyOptional({
-    example: 'tashkent',
-    description: 'Optional search query by branch name',
-  })
-  @IsOptional()
-  @IsString()
-  q?: string;
 }

@@ -67,6 +67,7 @@ export class ProductService {
       );
     }
 
+    // Faqat array sifatida yuboramiz, stringga aylantirmaymiz
     return this.productRepo.createProduct({
       barcode: dto.barcode,
       name: dto.name,
@@ -76,17 +77,17 @@ export class ProductService {
       real_price: dto.real_price,
       category_id: dto.category_id,
       description: dto.description,
-      imageUrls: dto.imageUrls ?? [],
+      tegs: dto.tegs, // shu yerda array
+      imageUrls: dto.imageUrls ?? [], // image bilan hech narsa qilinmaydi
     });
   }
+
   async updateProduct(barcode: string, dto: UpdateProductDto) {
-    // Avval mahsulotni tekshirib olamiz
     const product = await this.productRepo.selectByIDProduct(barcode);
     if (!product) {
       throw new NotFoundException(`Product not found with barcode: ${barcode}`);
     }
 
-    // Agar branch_id kelgan bo‘lsa, mavjudligini tekshiramiz
     if (dto.branch_id !== undefined) {
       const branch = await this.branchRepo.selectByIDBranch(dto.branch_id);
       if (!branch) {
@@ -96,7 +97,6 @@ export class ProductService {
       }
     }
 
-    // Agar category_id kelgan bo‘lsa, mavjudligini tekshiramiz
     if (dto.category_id !== undefined) {
       const category = await this.categoryRepo.selectByIDCategory(
         dto.category_id,
@@ -108,23 +108,15 @@ export class ProductService {
       }
     }
 
-    // Faqat kelgan fieldlarni repositoryga uzatamiz
+    // `tegs`ni array formatida yuborish
+    if (dto.tegs !== undefined && dto.tegs.length > 0) {
+      dto.tegs = `{${dto.tegs.map((t) => `"${t}"`).join(',')}}` as any;
+    }
+
     return this.productRepo.updateProduct(barcode, dto);
   }
 
-  async patchProduct(
-    barcode: string,
-    dto: {
-      barcode?: string;
-      name?: string;
-      branch_id?: number;
-      price?: number;
-      stock?: number;
-      real_price?: number;
-      category_id?: number;
-      description?: string;
-    },
-  ) {
+  async patchProduct(barcode: string, dto: Partial<UpdateProductDto>) {
     const product = await this.productRepo.selectByIDProduct(barcode);
     if (!product) {
       throw new NotFoundException(`Product not found with barcode: ${barcode}`);
@@ -150,16 +142,11 @@ export class ProductService {
       }
     }
 
-    return this.productRepo.patchProduct(barcode, {
-      barcode: dto.barcode ?? null,
-      name: dto.name ?? null,
-      branch_id: dto.branch_id ?? null,
-      price: dto.price ?? null,
-      stock: dto.stock ?? null,
-      real_price: dto.real_price ?? null,
-      category_id: dto.category_id ?? null,
-      description: dto.description ?? null,
-    });
+    if (dto.tegs !== undefined && dto.tegs.length > 0) {
+      dto.tegs = `{${dto.tegs.map((t) => `"${t}"`).join(',')}}` as any;
+    }
+
+    return this.productRepo.updateProduct(barcode, dto as any);
   }
 
   async deleteProduct(barcode: string) {
@@ -167,7 +154,7 @@ export class ProductService {
     if (!product) {
       throw new NotFoundException(`Product not found with barcode: ${barcode}`);
     }
-    await this.productRepo.deleteProductQuery(barcode);
+    await this.productRepo.deleteProduct(barcode);
     return { message: 'Successfully deleted' };
   }
 }

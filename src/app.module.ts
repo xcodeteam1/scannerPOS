@@ -13,6 +13,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { multerConfig } from './common/middleware/multer.config';
 import { MainModule } from './main/main.module';
 import { CategoryModule } from './category/category.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { CategoryModule } from './category/category.module';
     MulterModule.register(multerConfig),
     MainModule,
     CategoryModule,
+    NotificationModule,
   ],
 })
 export class AppModule {}

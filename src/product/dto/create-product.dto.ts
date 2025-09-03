@@ -1,5 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
+  ArrayNotEmpty,
+  IsArray,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -21,6 +25,22 @@ export class CreateProductDto {
   @ApiProperty({ example: 1, description: 'Branch ID' })
   @IsNumber()
   branch_id: number;
+
+  @ApiProperty({
+    example: ['new', 'hit'],
+    description: 'Product tags',
+    isArray: true,
+  })
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsEnum(['new', 'hit', 'sale'], { each: true })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value.split(',');
+    }
+    return value;
+  })
+  tegs: ('new' | 'hit' | 'sale')[];
 
   @ApiProperty({ example: 1500, description: 'Price' })
   @IsNumber()
