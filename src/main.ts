@@ -5,7 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import { NestExpressApplication } from '@nestjs/platform-express'; // ✅ MUHIM
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 
 dotenv.config();
@@ -54,7 +54,7 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT || 3000, () => {
+  await app.listen(process.env.PORT, () => {
     console.log(`listened at http://localhost:${process.env.PORT}/swagger`);
   });
 }
