@@ -84,34 +84,41 @@ export class ProductService {
 
   async updateProduct(barcode: string, dto: UpdateProductDto) {
     const product = await this.productRepo.selectByIDProduct(barcode);
-    if (!product) {
-      throw new NotFoundException(`Product not found with barcode: ${barcode}`);
-    }
+    if (!product) throw new NotFoundException(`Product not found`);
 
+    // Branch va category tekshirish
     if (dto.branch_id !== undefined) {
       const branch = await this.branchRepo.selectByIDBranch(dto.branch_id);
-      if (!branch) {
-        throw new NotFoundException(
-          `Branch not found with id: ${dto.branch_id}`,
-        );
-      }
+      if (!branch) throw new NotFoundException(`Branch not found`);
     }
-
     if (dto.category_id !== undefined) {
       const category = await this.categoryRepo.selectByIDCategory(
         dto.category_id,
       );
-      if (!category) {
-        throw new NotFoundException(
-          `Category not found with id: ${dto.category_id}`,
-        );
-      }
+      if (!category) throw new NotFoundException(`Category not found`);
     }
 
-    // `tegs`ni array formatida yuborish
-    if (dto.tegs !== undefined && dto.tegs.length > 0) {
+    // Tegsni PostgreSQL array formatiga o‘zgartirish
+    if (dto.tegs && dto.tegs.length > 0) {
       dto.tegs = `{${dto.tegs.map((t) => `"${t}"`).join(',')}}` as any;
     }
+
+    // Images append/remove logikasi
+    let currentImages: string[] = product.image
+      ? product.image.replace(/[{}"]/g, '').split(',')
+      : [];
+
+    if (dto.addImages && dto.addImages.length > 0) {
+      currentImages.push(...dto.addImages);
+    }
+
+    if (dto.removeImages && dto.removeImages.length > 0) {
+      currentImages = currentImages.filter(
+        (img) => !dto.removeImages.includes(img),
+      );
+    }
+
+    dto.imageUrls = currentImages.length > 0 ? currentImages : undefined;
 
     return this.productRepo.updateProduct(barcode, dto);
   }

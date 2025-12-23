@@ -112,6 +112,10 @@ export class ProductController {
           type: 'array',
           items: { type: 'string', format: 'binary' },
         },
+        removeImages: {
+          type: 'array',
+          items: { type: 'string' },
+        },
       },
     },
   })
@@ -120,16 +124,14 @@ export class ProductController {
     @Param('barcode') barcode: string,
     @Body() body: UpdateProductDto,
   ) {
-    // Yangi yuklangan rasmlar
     const uploadedImages = Array.isArray(files)
       ? files.map((file) => `${process.env.BACKEND_URL}/${file?.filename}`)
       : [];
 
-    // Faqat kelgan fieldlarni yig‘amiz
     const updateData: any = { ...body };
 
     if (uploadedImages.length > 0) {
-      updateData.imageUrls = uploadedImages;
+      updateData.addImages = uploadedImages;
     }
 
     return this.service.updateProduct(barcode, updateData);
