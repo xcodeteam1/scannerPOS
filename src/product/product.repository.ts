@@ -236,9 +236,11 @@ export class ProductRepo {
       updateData.category_id = data.category_id;
     if (data.description !== undefined)
       updateData.description = data.description;
-    if (data.imageUrls !== undefined)
-      updateData.image = `{${data.imageUrls.map((img) => `"${img}"`).join(',')}}`;
-
+    if (Array.isArray(data.imageUrls) && data.imageUrls.length > 0) {
+      updateData.image = `{${data.imageUrls
+        .map((img) => `"${img}"`)
+        .join(',')}}`;
+    }
     if (Object.keys(updateData).length === 0) {
       throw new Error('Hech qanday field yuborilmadi!');
     }
