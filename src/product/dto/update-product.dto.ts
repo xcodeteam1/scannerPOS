@@ -38,8 +38,16 @@ export class UpdateProductDto {
   @IsIn(['new', 'hit', 'sale'], { each: true })
   tegs?: ('new' | 'hit' | 'sale')[];
 
-  // 🔥 Validation uchun qo‘shildi, body’da bo‘lishi shart emas
+  // Faqat qo‘shimcha qilish yoki o‘chirish uchun
   @IsOptional()
   @IsArray()
-  images?: any[];
+  addImages?: any[];
+
+  @IsOptional()
+  @IsArray()
+  removeImages?: any[];
+
+  // ✅ DB update uchun ichki property
+  @IsOptional()
+  imageUrls?: string[];
 }
