@@ -17,7 +17,10 @@ import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 import { multerConfig } from 'src/common/middleware/multer.config';
 import { SelectAllProductQueryDto } from './dto/select-all-product.dto';
 import { PatchProductDto } from './dto/patch-product.dto';
@@ -139,13 +142,21 @@ export class ProductController {
 
   @HttpCode(200)
   @Put('/images/:barcode')
-  @UseInterceptors(FilesInterceptor('images', 10, multerConfig))
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'images', maxCount: 10 }, // add images
+        { name: 'replaceImage', maxCount: 1 }, // replace image
+      ],
+      multerConfig,
+    ),
+  )
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        images: {
+        addImages: {
           type: 'array',
           items: { type: 'string', format: 'binary' },
         },
@@ -165,17 +176,28 @@ export class ProductController {
   })
   async updateProductImages(
     @Param('barcode') barcode: string,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles()
+    files: {
+      images?: Express.Multer.File[];
+      replaceImage?: Express.Multer.File[];
+    },
     @Body() body: any,
   ) {
-    const uploadedImages = files?.map(
+    const addImages = files.images?.map(
       (f) => `${process.env.BACKEND_URL}/${f.filename}`,
     );
 
+    const replaceImage = files.replaceImage?.[0]
+      ? {
+          oldImage: body.oldImage,
+          newImage: `${process.env.BACKEND_URL}/${files.replaceImage[0].filename}`,
+        }
+      : null;
+
     return this.service.updateProductImages(barcode, {
-      addImages: uploadedImages,
+      addImages,
       removeImages: body.removeImages,
-      replaceImage: body.replaceImage,
+      replaceImage,
     });
   }
 
