@@ -35,8 +35,8 @@ async function bootstrap() {
     .setTitle('Scanner-POS')
     .setDescription('Scanner-POS API')
     .setVersion('1.0')
-    .addServer('http://localhost:3000', 'local server')
     .addServer('http://213.139.210.248:3017', 'production server')
+    .addServer('http://localhost:3000', 'local server')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
