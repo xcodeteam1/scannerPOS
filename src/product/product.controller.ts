@@ -140,34 +140,11 @@ export class ProductController {
     return this.service.updateProduct(barcode, updateData);
   }
 
-  @HttpCode(200)
   @Put('/images/:barcode')
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'images', maxCount: 10 }], multerConfig),
   )
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        addImages: {
-          type: 'array',
-          items: { type: 'string', format: 'binary' },
-        },
-        removeImages: {
-          type: 'array',
-          items: { type: 'string' },
-        },
-        replaceImage: {
-          type: 'object',
-          properties: {
-            oldImage: { type: 'string' },
-            newImage: { type: 'string', format: 'binary' },
-          },
-        },
-      },
-    },
-  })
   async updateProductImages(
     @Param('barcode') barcode: string,
     @UploadedFiles()
