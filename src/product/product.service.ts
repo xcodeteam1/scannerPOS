@@ -162,6 +162,36 @@ export class ProductService {
 
     return this.productRepo.updateProductImages(barcode, images);
   }
+  async replaceProductImage(
+    barcode: string,
+    oldImage: string,
+    newImage: string,
+  ) {
+    const product = await this.productRepo.selectByIDProduct(barcode);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    // ✅ PostgreSQL array ni to‘g‘ri o‘qish
+    let images: string[] = [];
+
+    if (Array.isArray(product.image)) {
+      images = [...product.image];
+    } else if (typeof product.image === 'string') {
+      images = product.image.replace(/[{}"]/g, '').split(',').filter(Boolean);
+    }
+
+    const index = images.indexOf(oldImage);
+    if (index === -1) {
+      throw new BadRequestException('Old image not found');
+    }
+
+    // 🔁 REPLACE
+    images[index] = newImage;
+
+    // ✅ repository faqat array qabul qiladi
+    return this.productRepo.updateProductImages(barcode, images);
+  }
 
   async patchProduct(barcode: string, dto: Partial<UpdateProductDto>) {
     const product = await this.productRepo.selectByIDProduct(barcode);

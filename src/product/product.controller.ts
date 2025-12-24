@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -167,6 +168,34 @@ export class ProductController {
       addImages,
       removeImages,
     });
+  }
+  @Put('image/replace/:barcode')
+  @UseInterceptors(FilesInterceptor('image', 1, multerConfig))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        oldImage: { type: 'string' },
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async replaceProductImage(
+    @Param('barcode') barcode: string,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body('oldImage') oldImage: string,
+  ) {
+    if (!files || files.length === 0) {
+      throw new BadRequestException('New image is required');
+    }
+
+    const newImage = `${process.env.BACKEND_URL}/${files[0].filename}`;
+
+    return this.service.replaceProductImage(barcode, oldImage, newImage);
   }
 
   @HttpCode(200)
