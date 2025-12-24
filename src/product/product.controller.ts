@@ -145,7 +145,7 @@ export class ProductController {
     schema: {
       type: 'object',
       properties: {
-        addImages: {
+        images: {
           type: 'array',
           items: { type: 'string', format: 'binary' },
         },
