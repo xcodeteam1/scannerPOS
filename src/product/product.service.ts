@@ -136,9 +136,9 @@ export class ProductService {
     const product = await this.productRepo.selectByIDProduct(barcode);
     if (!product) throw new NotFoundException('Product not found');
 
-    // 📦 Mavjud rasmlar
-    let images: string[] = product.image
-      ? product.image.replace(/[{}"]/g, '').split(',')
+    // ✅ ARRAY sifatida olamiz
+    let images: string[] = Array.isArray(product.image)
+      ? [...product.image]
       : [];
 
     // ❌ REMOVE
