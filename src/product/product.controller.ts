@@ -143,13 +143,7 @@ export class ProductController {
   @HttpCode(200)
   @Put('/images/:barcode')
   @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'images', maxCount: 10 }, // add images
-        { name: 'replaceImage', maxCount: 1 }, // replace image
-      ],
-      multerConfig,
-    ),
+    FileFieldsInterceptor([{ name: 'images', maxCount: 10 }], multerConfig),
   )
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -179,25 +173,22 @@ export class ProductController {
     @UploadedFiles()
     files: {
       images?: Express.Multer.File[];
-      replaceImage?: Express.Multer.File[];
     },
     @Body() body: any,
   ) {
-    const addImages = files.images?.map(
-      (f) => `${process.env.BACKEND_URL}/${f.filename}`,
-    );
+    const addImages =
+      files?.images?.map((f) => `${process.env.BACKEND_URL}/${f.filename}`) ||
+      [];
 
-    const replaceImage = files.replaceImage?.[0]
-      ? {
-          oldImage: body.oldImage,
-          newImage: `${process.env.BACKEND_URL}/${files.replaceImage[0].filename}`,
-        }
-      : null;
+    const removeImages = Array.isArray(body.removeImages)
+      ? body.removeImages
+      : body.removeImages
+        ? [body.removeImages]
+        : [];
 
     return this.service.updateProductImages(barcode, {
       addImages,
-      removeImages: body.removeImages,
-      replaceImage,
+      removeImages,
     });
   }
 
