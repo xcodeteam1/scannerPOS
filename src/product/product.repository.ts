@@ -256,6 +256,22 @@ export class ProductRepo {
 
     return updated;
   }
+  async updateProductImages(barcode: string, images: string[]) {
+    const imagePgArray =
+      images.length > 0
+        ? `{${images.map((img) => `"${img}"`).join(',')}}`
+        : null;
+
+    const [updated] = await db('product')
+      .where({ barcode })
+      .update({
+        image: imagePgArray,
+        updated_at: db.fn.now(),
+      })
+      .returning('*');
+
+    return updated;
+  }
 
   // Delete product
   async deleteProduct(barcode: string) {

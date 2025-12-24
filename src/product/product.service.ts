@@ -115,6 +115,46 @@ export class ProductService {
 
     return this.productRepo.updateProduct(barcode, dto);
   }
+  async updateProductImages(
+    barcode: string,
+    dto: {
+      addImages?: string[];
+      removeImages?: string[];
+      replaceImage?: {
+        oldImage: string;
+        newImage: string;
+      };
+    },
+  ) {
+    const product = await this.productRepo.selectByIDProduct(barcode);
+    if (!product) throw new NotFoundException('Product not found');
+
+    // 📦 Mavjud rasmlar
+    let images: string[] = product.image
+      ? product.image.replace(/[{}"]/g, '').split(',')
+      : [];
+
+    // ❌ REMOVE
+    if (dto.removeImages?.length) {
+      images = images.filter((img) => !dto.removeImages.includes(img));
+    }
+
+    // ➕ ADD
+    if (dto.addImages?.length) {
+      images.push(...dto.addImages);
+    }
+
+    // 🔁 REPLACE
+    if (dto.replaceImage) {
+      const index = images.indexOf(dto.replaceImage.oldImage);
+      if (index === -1) {
+        throw new BadRequestException('Old image not found');
+      }
+      images[index] = dto.replaceImage.newImage;
+    }
+
+    return this.productRepo.updateProductImages(barcode, images);
+  }
 
   async patchProduct(barcode: string, dto: Partial<UpdateProductDto>) {
     const product = await this.productRepo.selectByIDProduct(barcode);
