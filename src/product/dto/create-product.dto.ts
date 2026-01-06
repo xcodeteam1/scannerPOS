@@ -31,8 +31,14 @@ export class CreateProductDto {
     description: 'Product tags',
     isArray: true,
   })
+  @ApiProperty({
+    example: ['new', 'hit'],
+    description: 'Product tags',
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
   @IsArray()
-  @ArrayNotEmpty()
   @IsEnum(['new', 'hit', 'sale'], { each: true })
   @Transform(({ value }) => {
     if (typeof value === 'string') {
@@ -40,7 +46,7 @@ export class CreateProductDto {
     }
     return value;
   })
-  tegs: ('new' | 'hit' | 'sale')[];
+  tegs?: ('new' | 'hit' | 'sale')[];
 
   @ApiProperty({ example: 1500, description: 'Price' })
   @IsNumber()
