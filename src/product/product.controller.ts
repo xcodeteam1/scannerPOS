@@ -122,35 +122,6 @@ export class ProductController {
     return this.service.updateProduct(barcode, body);
   }
 
-  @Put('/images/:barcode')
-  @UseInterceptors(
-    FileFieldsInterceptor([{ name: 'images', maxCount: 10 }], multerConfig),
-  )
-  @ApiConsumes('multipart/form-data')
-  async updateProductImages(
-    @Param('barcode') barcode: string,
-    @UploadedFiles()
-    files: {
-      images?: Express.Multer.File[];
-    },
-    @Body() body: any,
-  ) {
-    const addImages =
-      files?.images?.map((f) => `${process.env.BACKEND_URL}/${f.filename}`) ||
-      [];
-
-    const removeImages = Array.isArray(body.removeImages)
-      ? body.removeImages
-      : body.removeImages
-        ? [body.removeImages]
-        : [];
-
-    return this.service.updateProductImages(barcode, {
-      addImages,
-      removeImages,
-    });
-  }
-
   @HttpCode(200)
   // @Patch('/patch/:barcode')
   @ApiBody({
