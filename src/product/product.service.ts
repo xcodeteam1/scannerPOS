@@ -77,7 +77,7 @@ export class ProductService {
       real_price: dto.real_price,
       category_id: dto.category_id,
       description: dto.description,
-      tegs: dto.tegs, // shu yerda array
+      tegs: dto.tegs ?? [],
       imageUrls: dto.imageUrls ?? [], // image bilan hech narsa qilinmaydi
     });
   }

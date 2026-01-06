@@ -57,6 +57,8 @@ export class ProductController {
   @ApiBody({
     schema: {
       type: 'object',
+      required: ['barcode', 'name', 'branch_id', 'category_id'],
+
       properties: {
         barcode: { type: 'string' },
         name: { type: 'string' },

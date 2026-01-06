@@ -180,29 +180,50 @@ export class ProductRepo {
     category_id: number;
     description?: string;
     real_price: number;
-    tegs: ('new' | 'hit' | 'sale')[];
+    tegs?: ('new' | 'hit' | 'sale')[];
     imageUrls?: string[];
   }) {
     const imageArrayPg =
       data.imageUrls && data.imageUrls.length
         ? `{${data.imageUrls.map((img) => `"${img}"`).join(',')}}`
         : null;
-    const tegsArrayPg = data.tegs.length
-      ? `{${data.tegs.map((t) => `"${t}"`).join(',')}}`
-      : null;
 
-    const res = await db.raw(createProductQuery, [
-      data.barcode,
-      data.name,
-      data.branch_id,
-      data.price,
-      data.stock,
-      data.real_price,
-      data.category_id,
-      data.description || null,
-      tegsArrayPg,
-      imageArrayPg,
-    ]);
+    const tegsArrayPg =
+      data.tegs && data.tegs.length
+        ? `{${data.tegs.map((t) => `"${t}"`).join(',')}}`
+        : null;
+
+    const res = await db.raw(
+      `
+      INSERT INTO product(
+        barcode,
+        name,
+        branch_id,
+        price,
+        stock,
+        real_price,
+        category_id,
+        description,
+        tegs,
+        image
+      )
+      VALUES(?,?,?,?,?,?,?,?,?,?)
+      RETURNING *;
+      `,
+      [
+        data.barcode,
+        data.name,
+        data.branch_id,
+        data.price,
+        data.stock,
+        data.real_price,
+        data.category_id,
+        data.description || null,
+        tegsArrayPg,
+        imageArrayPg,
+      ],
+    );
+
     return res.rows[0];
   }
 
