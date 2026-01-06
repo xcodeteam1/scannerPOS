@@ -1,31 +1,33 @@
 import { IsOptional, IsString, IsNumber, IsArray, IsIn } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class UpdateProductDto {
-  @IsOptional()
-  @IsString()
-  barcode?: string;
-
   @IsOptional()
   @IsString()
   name?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   branch_id?: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   category_id?: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   price?: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   stock?: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   real_price?: number;
 
@@ -37,17 +39,4 @@ export class UpdateProductDto {
   @IsArray()
   @IsIn(['new', 'hit', 'sale'], { each: true })
   tegs?: ('new' | 'hit' | 'sale')[];
-
-  // Faqat qo‘shimcha qilish yoki o‘chirish uchun
-  @IsOptional()
-  @IsArray()
-  addImages?: any[];
-
-  @IsOptional()
-  @IsArray()
-  removeImages?: any[];
-
-  // ✅ DB update uchun ichki property
-  @IsOptional()
-  imageUrls?: string[];
 }
