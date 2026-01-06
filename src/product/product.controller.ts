@@ -117,12 +117,6 @@ export class ProductController {
     @Param('barcode') barcode: string,
     @Body() body: UpdateProductDto,
   ) {
-    console.log('start update body');
-    console.log('barcode:', barcode);
-    console.log('update body');
-    console.log(body);
-    console.log('end update body');
-
     return this.service.updateProduct(barcode, body);
   }
 

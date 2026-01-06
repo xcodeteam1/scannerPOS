@@ -88,6 +88,8 @@ export class ProductService {
       throw new NotFoundException('Product not found');
     }
 
+    console.log('Update DTO:', dto);
+    console.log('Barcode:', barcode);
     // Branch tekshirish
     if (dto.branch_id !== undefined) {
       const branch = await this.branchRepo.selectByIDBranch(dto.branch_id);
