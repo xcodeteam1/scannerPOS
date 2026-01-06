@@ -210,39 +210,26 @@ export class ProductRepo {
   async updateProduct(
     barcode: string,
     data: {
-      barcode?: string;
       name?: string;
       branch_id?: number;
+      category_id?: number;
       price?: number;
       stock?: number;
       real_price?: number;
-      category_id?: number;
       description?: string;
-      tegs?: ('new' | 'hit' | 'sale')[];
-      imageUrls?: string[];
+      tegs?: any;
     },
   ) {
     const updateData: any = {};
 
-    if (data.barcode !== undefined) updateData.barcode = data.barcode;
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.branch_id !== undefined) updateData.branch_id = data.branch_id;
-    if (data.price !== undefined) updateData.price = data.price;
-    if (data.stock !== undefined) updateData.stock = data.stock;
-    if (data.real_price !== undefined) updateData.real_price = data.real_price;
-    if (data.tegs !== undefined) updateData.tegs = data.tegs;
-    console.log(updateData.tegs);
-    if (data.category_id !== undefined)
-      updateData.category_id = data.category_id;
-    if (data.description !== undefined)
-      updateData.description = data.description;
-    if (Array.isArray(data.imageUrls) && data.imageUrls.length > 0) {
-      updateData.image = `{${data.imageUrls
-        .map((img) => `"${img}"`)
-        .join(',')}}`;
-    }
-    if (Object.keys(updateData).length === 0) {
-      throw new Error('Hech qanday field yuborilmadi!');
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined) {
+        updateData[key] = value;
+      }
+    });
+
+    if (!Object.keys(updateData).length) {
+      throw new BadRequestException('Hech qanday field yuborilmadi');
     }
 
     const [updated] = await db('product')
@@ -251,11 +238,12 @@ export class ProductRepo {
       .returning('*');
 
     if (!updated) {
-      throw new Error(`Product with barcode ${barcode} not found`);
+      throw new NotFoundException('Product not found');
     }
 
     return updated;
   }
+
   async updateProductImages(barcode: string, images: string[]) {
     const imagePgArray =
       images.length > 0

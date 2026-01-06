@@ -94,13 +94,11 @@ export class ProductController {
 
   @HttpCode(200)
   @Put('/update/:barcode')
-  @UseInterceptors(FilesInterceptor('images', 10, multerConfig))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        barcode: { type: 'string' },
         name: { type: 'string' },
         branch_id: { type: 'number' },
         category_id: { type: 'number' },
@@ -112,33 +110,14 @@ export class ProductController {
           type: 'array',
           items: { type: 'string', enum: ['new', 'hit', 'sale'] },
         },
-        images: {
-          type: 'array',
-          items: { type: 'string', format: 'binary' },
-        },
-        removeImages: {
-          type: 'array',
-          items: { type: 'string' },
-        },
       },
     },
   })
   async updateProduct(
-    @UploadedFiles() files: Express.Multer.File[],
     @Param('barcode') barcode: string,
     @Body() body: UpdateProductDto,
   ) {
-    const uploadedImages = Array.isArray(files)
-      ? files.map((file) => `${process.env.BACKEND_URL}/${file?.filename}`)
-      : [];
-
-    const updateData: any = { ...body };
-
-    if (uploadedImages.length > 0) {
-      updateData.addImages = uploadedImages;
-    }
-
-    return this.service.updateProduct(barcode, updateData);
+    return this.service.updateProduct(barcode, body);
   }
 
   @Put('/images/:barcode')
