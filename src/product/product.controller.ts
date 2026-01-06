@@ -91,24 +91,24 @@ export class ProductController {
     console.log(body.tegs);
     return this.service.createProduct({ ...body, imageUrls });
   }
-
   @HttpCode(200)
   @Put('/update/:barcode')
-  @ApiConsumes('multipart/form-data')
+  @ApiConsumes('application/json') // 🔥 MUHIM
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        name: { type: 'string' },
-        branch_id: { type: 'number' },
-        category_id: { type: 'number' },
-        price: { type: 'number' },
-        stock: { type: 'number' },
-        real_price: { type: 'number' },
-        description: { type: 'string' },
+        name: { type: 'string', example: 'Product name' },
+        branch_id: { type: 'number', example: 1 },
+        category_id: { type: 'number', example: 2 },
+        price: { type: 'number', example: 12000 },
+        stock: { type: 'number', example: 5 },
+        real_price: { type: 'number', example: 10000 },
+        description: { type: 'string', example: 'Some description' },
         tegs: {
           type: 'array',
           items: { type: 'string', enum: ['new', 'hit', 'sale'] },
+          example: ['new'],
         },
       },
     },
