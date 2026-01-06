@@ -81,6 +81,52 @@ export class ProductService {
       imageUrls: dto.imageUrls ?? [], // image bilan hech narsa qilinmaydi
     });
   }
+  // product.service.ts
+
+  async deleteProductImages(barcode: string, removeImages: string[]) {
+    const product = await this.productRepo.selectByIDProduct(barcode);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    // PostgreSQL array ni to‘g‘ri o‘qiymiz
+    let images: string[] = [];
+
+    if (Array.isArray(product.image)) {
+      images = [...product.image];
+    } else if (typeof product.image === 'string') {
+      images = product.image.replace(/[{}"]/g, '').split(',').filter(Boolean);
+    }
+
+    const filteredImages = images.filter((img) => !removeImages.includes(img));
+
+    if (filteredImages.length === images.length) {
+      throw new BadRequestException('Images not found');
+    }
+
+    return this.productRepo.updateProductImages(barcode, filteredImages);
+  }
+  // product.service.ts
+
+  async addProductImages(barcode: string, addImages: string[]) {
+    const product = await this.productRepo.selectByIDProduct(barcode);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    // PostgreSQL array ni to‘g‘ri o‘qiymiz
+    let images: string[] = [];
+
+    if (Array.isArray(product.image)) {
+      images = [...product.image];
+    } else if (typeof product.image === 'string') {
+      images = product.image.replace(/[{}"]/g, '').split(',').filter(Boolean);
+    }
+
+    const updatedImages = [...images, ...addImages];
+
+    return this.productRepo.updateProductImages(barcode, updatedImages);
+  }
 
   async updateProduct(barcode: string, dto: UpdateProductDto) {
     const product = await this.productRepo.selectByIDProduct(barcode);

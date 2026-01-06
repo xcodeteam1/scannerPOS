@@ -265,6 +265,8 @@ export class ProductRepo {
     return updated;
   }
 
+  // product.repository.ts
+
   async updateProductImages(barcode: string, images: string[]) {
     const imagePgArray =
       images.length > 0
@@ -279,7 +281,32 @@ export class ProductRepo {
       })
       .returning('*');
 
+    if (!updated) {
+      throw new NotFoundException('Product not found');
+    }
+
     return updated;
+  }
+  // product.service.ts
+
+  async addProductImages(barcode: string, addImages: string[]) {
+    const product = await this.productRepo.selectByIDProduct(barcode);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    // PostgreSQL array ni to‘g‘ri o‘qiymiz
+    let images: string[] = [];
+
+    if (Array.isArray(product.image)) {
+      images = [...product.image];
+    } else if (typeof product.image === 'string') {
+      images = product.image.replace(/[{}"]/g, '').split(',').filter(Boolean);
+    }
+
+    const updatedImages = [...images, ...addImages];
+
+    return this.productRepo.updateProductImages(barcode, updatedImages);
   }
 
   // Delete product

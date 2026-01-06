@@ -150,34 +150,6 @@ export class ProductController {
       removeImages,
     });
   }
-  @Put('image/replace/:barcode')
-  @UseInterceptors(FilesInterceptor('image', 1, multerConfig))
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        oldImage: { type: 'string' },
-        image: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  async replaceProductImage(
-    @Param('barcode') barcode: string,
-    @UploadedFiles() files: Express.Multer.File[],
-    @Body('oldImage') oldImage: string,
-  ) {
-    if (!files || files.length === 0) {
-      throw new BadRequestException('New image is required');
-    }
-
-    const newImage = `${process.env.BACKEND_URL}/${files[0].filename}`;
-
-    return this.service.replaceProductImage(barcode, oldImage, newImage);
-  }
 
   @HttpCode(200)
   // @Patch('/patch/:barcode')
@@ -202,6 +174,113 @@ export class ProductController {
   ) {
     return this.service.patchProduct(barcode, body);
   }
+  // product.controller.ts
+  // product.controller.ts
+
+  @Put('image/replace/:barcode')
+  @HttpCode(200)
+  @UseInterceptors(FilesInterceptor('image', 1, multerConfig))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['oldImage', 'image'],
+      properties: {
+        oldImage: { type: 'string', example: 'http://backend/old-image.jpg' },
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async replaceProductImage(
+    @Param('barcode') barcode: string,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body('oldImage') oldImage: string,
+  ) {
+    if (!files || files.length === 0) {
+      throw new BadRequestException('New image is required');
+    }
+
+    if (!oldImage) {
+      throw new BadRequestException('oldImage is required');
+    }
+
+    const newImage = `${process.env.BACKEND_URL}/${files[0].filename}`;
+
+    return this.service.replaceProductImage(barcode, oldImage, newImage);
+  }
+
+  @Put('images/add/:barcode')
+  @HttpCode(200)
+  @UseInterceptors(FilesInterceptor('images', 10, multerConfig))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['images'],
+      properties: {
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
+  async addProductImages(
+    @Param('barcode') barcode: string,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    if (!files || files.length === 0) {
+      throw new BadRequestException('Images are required');
+    }
+
+    const imageUrls = files.map(
+      (file) => `${process.env.BACKEND_URL}/${file.filename}`,
+    );
+
+    return this.service.addProductImages(barcode, imageUrls);
+  }
+
+  // product.controller.ts
+
+  @Put('images/delete/:barcode')
+  @HttpCode(200)
+  @ApiConsumes('application/json')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['removeImages'],
+      properties: {
+        removeImages: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['http://backend/image1.jpg'],
+        },
+      },
+    },
+  })
+  async deleteProductImages(
+    @Param('barcode') barcode: string,
+    @Body('removeImages') removeImages: string[] | string,
+  ) {
+    const imagesToRemove = Array.isArray(removeImages)
+      ? removeImages
+      : removeImages
+        ? [removeImages]
+        : [];
+
+    if (!imagesToRemove.length) {
+      throw new BadRequestException('removeImages is required');
+    }
+
+    return this.service.deleteProductImages(barcode, imagesToRemove);
+  }
+
   @HttpCode(200)
   @Delete('/delete/:barcode')
   deleteProductCont(@Param('barcode') barcode: string) {
