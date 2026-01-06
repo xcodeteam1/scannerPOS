@@ -289,26 +289,6 @@ export class ProductRepo {
   }
   // product.service.ts
 
-  async addProductImages(barcode: string, addImages: string[]) {
-    const product = await this.productRepo.selectByIDProduct(barcode);
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    // PostgreSQL array ni to‘g‘ri o‘qiymiz
-    let images: string[] = [];
-
-    if (Array.isArray(product.image)) {
-      images = [...product.image];
-    } else if (typeof product.image === 'string') {
-      images = product.image.replace(/[{}"]/g, '').split(',').filter(Boolean);
-    }
-
-    const updatedImages = [...images, ...addImages];
-
-    return this.productRepo.updateProductImages(barcode, updatedImages);
-  }
-
   // Delete product
   async deleteProduct(barcode: string) {
     const res = await db.raw(deleteProductQuery, [barcode]);
