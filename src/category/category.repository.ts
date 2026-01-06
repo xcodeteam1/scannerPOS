@@ -152,6 +152,67 @@ export class CategoryRepo {
 
     return updated;
   }
+  async updateCategoryImages(id: number, images: string[]) {
+    const imagePgArray =
+      images.length > 0
+        ? `{${images.map((img) => `"${img}"`).join(',')}}`
+        : null;
+
+    const [updated] = await db('category')
+      .where({ id })
+      .update({
+        image: imagePgArray,
+        updated_at: db.fn.now(),
+      })
+      .returning('*');
+
+    if (!updated) {
+      throw new Error(`Category with id ${id} not found`);
+    }
+
+    return updated;
+  }
+
+  async updateCategoryImagesdelete(id: number, images: string[]) {
+    const imagePgArray =
+      images.length > 0
+        ? `{${images.map((img) => `"${img}"`).join(',')}}`
+        : null;
+
+    const [updated] = await db('category')
+      .where({ id })
+      .update({
+        image: imagePgArray,
+        updated_at: db.fn.now(),
+      })
+      .returning('*');
+
+    if (!updated) {
+      throw new Error(`Category with id ${id} not found`);
+    }
+
+    return updated;
+  }
+  async updateCategoryImagesReplace(id: number, images: string[]) {
+    const imagePgArray =
+      images.length > 0
+        ? `{${images.map((img) => `"${img}"`).join(',')}}`
+        : null;
+
+    const [updated] = await db('category')
+      .where({ id })
+      .update({
+        image: imagePgArray,
+        updated_at: db.fn.now(),
+      })
+      .returning('*');
+
+    if (!updated) {
+      throw new Error(`Category with id ${id} not found`);
+    }
+
+    return updated;
+  }
 
   async patchCategory(id: number, name?: string, description?: string) {
     try {

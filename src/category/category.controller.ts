@@ -12,6 +12,7 @@ import {
   UploadedFiles,
   Patch,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { CategoryService } from './category.service';
@@ -123,6 +124,104 @@ export class CategoryController {
     if (finalImageUrls) updateData.imageUrls = finalImageUrls;
 
     return await this.categoryService.updateCategory(id, updateData);
+  }
+  @Put('images/add/:id')
+  @HttpCode(200)
+  @UseInterceptors(FilesInterceptor('images', 10, multerConfig))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
+  async addCategoryImages(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    if (!files || files.length === 0) {
+      throw new BadRequestException('Images are required');
+    }
+
+    const imageUrls = files.map(
+      (file) => `${process.env.BACKEND_URL}/${file.filename}`,
+    );
+
+    return this.categoryService.addCategoryImages(id, imageUrls);
+  }
+  @Put('images/delete/:id')
+  @HttpCode(200)
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        removeImages: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['http://backend/image1.jpg'],
+        },
+      },
+    },
+  })
+  async deleteCategoryImages(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('removeImages') removeImages: string[] | string,
+  ) {
+    const imagesToRemove = Array.isArray(removeImages)
+      ? removeImages
+      : removeImages
+        ? [removeImages]
+        : [];
+
+    if (!imagesToRemove.length) {
+      throw new BadRequestException('removeImages is required');
+    }
+
+    return this.categoryService.deleteCategoryImages(id, imagesToRemove);
+  }
+  @Put('image/replace/:id')
+  @HttpCode(200)
+  @UseInterceptors(FilesInterceptor('image', 1, multerConfig))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        oldImage: {
+          type: 'string',
+          example: 'http://backend/old-image.jpg',
+        },
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async replaceCategoryImage(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body('oldImage') oldImage: string,
+  ) {
+    if (!files || files.length === 0) {
+      throw new BadRequestException('New image is required');
+    }
+
+    if (!oldImage) {
+      throw new BadRequestException('oldImage is required');
+    }
+
+    const newImage = `${process.env.BACKEND_URL}/${files[0].filename}`;
+
+    return this.categoryService.replaceCategoryImage(id, oldImage, newImage);
   }
 
   @HttpCode(200)
