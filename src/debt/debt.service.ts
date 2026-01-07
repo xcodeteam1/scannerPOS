@@ -44,23 +44,14 @@ export class DebtService {
       const customer = await this.customerRepo.selectByIDCustomer(
         debt.customer_id,
       );
-      if (!customer) {
-        throw new NotFoundException(
-          `customer not found with barcode: ${debt.customer_id}`,
-        );
-      }
-    }
-    for (const debt of data) {
+      if (!customer) throw new NotFoundException('Customer not found');
+
       const product = await this.productRepo.selectByIDProduct(
         debt.item_barcode,
       );
-      if (!product) {
-        throw new NotFoundException(
-          `product not found with barcode: ${debt.item_barcode}`,
-        );
-      }
+      if (!product) throw new NotFoundException('Product not found');
     }
-    const result = await this.debtRepo.createDebt(data);
-    return result;
+
+    return await this.debtRepo.createDebtWithTransaction(data);
   }
 }

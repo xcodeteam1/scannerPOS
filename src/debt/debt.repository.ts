@@ -183,7 +183,7 @@ export class DebtRepo {
     const res = await db.raw(searchDebtQuery, [fullText, ilikeText]);
     return res.rows;
   }
-  async createDebt(
+  async createDebtWithTransaction(
     data: {
       item_barcode: string;
       quantity: number;
@@ -192,23 +192,40 @@ export class DebtRepo {
       description: string;
     }[],
   ) {
-    //birinchi sale yaratadi
-    const results = [];
-    for (const debt of data) {
-      const res = await db.raw(createDebtQuery, [
-        debt.item_barcode,
-        debt.quantity,
-        debt.customer_id,
-        debt.amount,
-        debt.amount,
-        debt.description,
-      ]);
-      await db.raw(updateProductQuantityQuery, [
-        debt.quantity,
-        debt.item_barcode,
-      ]);
-      results.push(res.rows[0]);
-    }
-    return results;
+    return await db.transaction(async (trx) => {
+      const results = [];
+
+      for (const debt of data) {
+        // stock tekshir
+        const product = await trx('product')
+          .where('barcode', debt.item_barcode)
+          .first();
+
+        if (!product) throw new Error('Product not found');
+
+        if (product.stock < debt.quantity) throw new Error('Not enough stock');
+
+        const created = await trx('debt')
+          .insert({
+            item_barcode: debt.item_barcode,
+            quantity: debt.quantity,
+            customer_id: debt.customer_id,
+            amount: debt.amount, // qolgan qarz
+            debt_amount: debt.amount, // umumiy qarz
+            description: debt.description,
+          })
+          .returning('*');
+
+        await trx('product')
+          .where('barcode', debt.item_barcode)
+          .update({
+            stock: product.stock - debt.quantity,
+          });
+
+        results.push(created[0]);
+      }
+
+      return results;
+    });
   }
 }

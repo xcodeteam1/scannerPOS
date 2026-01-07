@@ -65,10 +65,9 @@ export class DebtController {
     return this.service.searchDebt(name);
   }
 
-  @HttpCode(201)
   @Post('create')
   @ApiBody({ type: CreateDebtDto, isArray: true })
-  createProductCont(@Body() body: CreateDebtDto[]) {
+  createDebt(@Body() body: CreateDebtDto[]) {
     return this.service.createDebt(body);
   }
 }
