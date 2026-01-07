@@ -97,17 +97,41 @@ FROM debt;
 
   `;
 const selectAllDebtQuery: string = `
-        SELECT
-          d.customer_id,
-          c.customer_name,
-          COALESCE(SUM(d.debt_amount), 0) AS debt_amount, --buni api ga chiqarish kerak chunki o'chib ketmaydi
-          MAX(d.created_at) AS last_debt_time --yaqinda olgan qarzi
-        FROM debt d
-        LEFT JOIN customer c ON c.id = d.customer_id
-        GROUP BY d.customer_id, c.customer_name
-        ORDER BY last_debt_time DESC
-        LIMIT ? OFFSET ?;
+  SELECT
+    d.customer_id,
+    c.customer_name,
+
+    -- umumiy qarz
+    COALESCE(SUM(d.debt_amount), 0) AS debt_amount,
+
+    -- qolgan qarz
+    COALESCE(SUM(d.amount), 0) AS remain_amount,
+
+    -- to'langan foiz %
+    CASE
+      WHEN COALESCE(SUM(d.debt_amount), 0) = 0 THEN 0
+      ELSE ROUND(
+        ( (SUM(d.debt_amount) - SUM(d.amount)) / SUM(d.debt_amount) ) * 100,
+        2
+      )
+    END AS paid_percent,
+
+    -- status
+    CASE
+      WHEN SUM(d.amount) = 0 THEN 'paid'
+      WHEN SUM(d.amount) = SUM(d.debt_amount) THEN 'pending'
+      ELSE 'partial'
+    END AS status,
+
+    MAX(d.created_at) AS last_debt_time
+
+  FROM debt d
+  LEFT JOIN customer c ON c.id = d.customer_id
+  GROUP BY d.customer_id, c.customer_name
+  ORDER BY last_debt_time DESC
+  LIMIT ? OFFSET ?;
 `;
+
 const selectOldestQuery: string = `
           SELECT 
           d.id,
