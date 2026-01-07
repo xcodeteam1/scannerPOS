@@ -65,10 +65,10 @@ const searchDebtQuery: string = `
 `;
 const selectRecentQuery: string = `
         SELECT 
-        COALESCE(SUM(debt_amount), 0) AS all_amount ,
-        COUNT(*) AS count_debt
-        FROM debt
-        WHERE created_at != updated_at; --qarzni to'lagani uchun debt table o'zgaradi
+  COALESCE(SUM(debt_amount - amount), 0) AS total_paid, -- to'langan summa
+  COUNT(*) FILTER (WHERE amount = 0) AS count_paid -- to'langan qarzlar soni
+FROM debt;
+
 `;
 
 const amountDebtQuery: string = `
@@ -90,10 +90,11 @@ const amountAllDebtQuery: string = `
 `;
 
 const selectPendingQuery: string = `
-        SELECT
-          COALESCE(SUM(debt_amount), 0) - COALESCE(SUM(amount), 0) AS total_pending,
-          SUM(CASE WHEN amount != 0.00 THEN 1 ELSE 0 END) AS count
-        FROM debt;
+      SELECT
+  COALESCE(SUM(amount), 0) AS total_pending, -- qolgan to'lanishi kerak summa
+  COUNT(*) FILTER (WHERE amount != 0) AS count_pending -- to'lanmagan qarzlar soni
+FROM debt;
+
   `;
 const selectAllDebtQuery: string = `
         SELECT
