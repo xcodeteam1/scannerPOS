@@ -11,16 +11,18 @@ import { join } from 'path';
 dotenv.config();
 
 // --- Persistent public/images papkasini project root-da yaratish ---
+// dist ichida emas, project root/public/images
 const rootPublicPath = path.join(__dirname, '..', '..', 'public'); // project root/public
 const imagesFolderPath = path.join(rootPublicPath, 'images');
 
+// Papkalar mavjudligini tekshirish va kerak bo'lsa yaratish
 if (!fs.existsSync(rootPublicPath)) {
-  fs.mkdirSync(rootPublicPath);
+  fs.mkdirSync(rootPublicPath, { recursive: true });
   console.info('public folder created at project root.');
 }
 
 if (!fs.existsSync(imagesFolderPath)) {
-  fs.mkdirSync(imagesFolderPath);
+  fs.mkdirSync(imagesFolderPath, { recursive: true });
   console.info('images folder created at project root.');
 }
 
@@ -28,7 +30,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors();
 
-  // Static assets
+  // Static assets: rasmlar va PDFlar shu papkadan xizmat qiladi
   app.useStaticAssets(imagesFolderPath, {
     prefix: '/public/images',
   });
@@ -51,7 +53,9 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      transformOptions: { enableImplicitConversion: true },
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 
