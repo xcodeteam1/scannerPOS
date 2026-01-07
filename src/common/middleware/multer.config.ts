@@ -1,11 +1,11 @@
 import { diskStorage } from 'multer';
-import { extname, resolve } from 'path';
-import { Multer } from 'multer'; // Multer tipini bu yerda import qilamiz
+import { join } from 'path';
 
 export const multerConfig = {
   storage: diskStorage({
     destination: (req, file, cb) => {
-      cb(null, resolve(__dirname, '..', '..', '..', 'public', 'images'));
+      const uploadPath = join(process.cwd(), 'public', 'images');
+      cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
       const uniqueName =

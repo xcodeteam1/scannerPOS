@@ -31,7 +31,7 @@ async function bootstrap() {
   app.enableCors();
 
   // Static assets: rasmlar va PDFlar shu papkadan xizmat qiladi
-  app.useStaticAssets(join(__dirname, '..', 'public', 'images'), {
+  app.useStaticAssets(join(process.cwd(), 'public', 'images'), {
     prefix: '/public/images',
   });
 
