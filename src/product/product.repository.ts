@@ -57,57 +57,64 @@ const deleteProductQuery = `
 @Injectable()
 export class ProductRepo {
   // Get all products with pagination and optional search
-  async getProducts(page: number, pageSize: number, q?: string) {
+  async getProducts(
+    page: number,
+    pageSize: number,
+    q?: string,
+    tegs?: string[],
+  ) {
     const offset = (page - 1) * pageSize;
     let totalCountResult, dataResult;
 
+    const params: any[] = [];
+
+    let whereClause = `WHERE product.is_deleted = FALSE`;
+
+    // 🔍 q bo‘yicha qidiruv
     if (q && q.trim() !== '') {
       const fullText = q;
       const ilikeText = `%${q}%`;
 
-      totalCountResult = await db.raw(
-        `
-        SELECT COUNT(*) 
-        FROM product
-        JOIN branch ON branch.id = product.branch_id
-        WHERE (
+      whereClause += `
+        AND (
           to_tsvector('simple', product.name) @@ plainto_tsquery(?)
           OR product.name ILIKE ?
           OR product.barcode ILIKE ?
         )
-        `,
-        [fullText, ilikeText, ilikeText],
-      );
+      `;
 
-      dataResult = await db.raw(
-        `
-        SELECT product.*, branch.name AS branch_name
-        FROM product
-        JOIN branch ON branch.id = product.branch_id
-        WHERE (
-          to_tsvector('simple', product.name) @@ plainto_tsquery(?)
-          OR product.name ILIKE ?
-          OR product.barcode ILIKE ?
-        )
-        ORDER BY product.updated_at DESC
-        LIMIT ? OFFSET ?
-        `,
-        [fullText, ilikeText, ilikeText, pageSize, offset],
-      );
-    } else {
-      totalCountResult = await db.raw(`SELECT COUNT(*) FROM product`);
-
-      dataResult = await db.raw(
-        `
-        SELECT product.*, branch.name AS branch_name
-        FROM product
-        JOIN branch ON branch.id = product.branch_id
-        ORDER BY product.updated_at DESC
-        LIMIT ? OFFSET ?
-        `,
-        [pageSize, offset],
-      );
+      params.push(fullText, ilikeText, ilikeText);
     }
+
+    // 🏷️ tegs bo‘yicha filter
+    if (tegs && tegs.length > 0) {
+      whereClause += ` AND product.tegs && ?::tegs[]`;
+      params.push(tegs);
+    }
+
+    // --- total count
+    totalCountResult = await db.raw(
+      `
+      SELECT COUNT(*) 
+      FROM product
+      JOIN branch ON branch.id = product.branch_id
+      ${whereClause}
+      `,
+      params,
+    );
+
+    // --- data
+    dataResult = await db.raw(
+      `
+      SELECT product.*, branch.name AS branch_name
+      FROM product
+      JOIN branch ON branch.id = product.branch_id
+      ${whereClause}
+      ORDER BY product.updated_at DESC
+      LIMIT ? OFFSET ?
+      `,
+      [...params, pageSize, offset],
+    );
 
     const totalRecords = parseInt(totalCountResult.rows[0].count);
     const data = dataResult.rows;

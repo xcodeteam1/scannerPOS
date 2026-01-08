@@ -26,4 +26,8 @@ export class SelectAllProductQueryDto {
   @IsOptional()
   @IsString()
   q?: string;
+
+  @IsOptional()
+  @IsString()
+  tegs?: string;
 }

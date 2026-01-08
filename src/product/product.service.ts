@@ -17,11 +17,23 @@ export class ProductService {
     private readonly categoryRepo: CategoryRepo,
   ) {}
 
-  async selectAllProduct(page: number, pageSize: number, q?: string) {
+  async selectAllProduct(
+    page: number,
+    pageSize: number,
+    q?: string,
+    tegs?: string,
+  ) {
     if (page <= 0 || pageSize <= 0) {
       throw new BadRequestException('Page and pageSize must be greater than 0');
     }
-    return this.productRepo.getProducts(page, pageSize, q);
+
+    let tegsArray: string[] | undefined;
+
+    if (tegs) {
+      tegsArray = tegs.split(',').map((t) => t.trim());
+    }
+
+    return this.productRepo.getProducts(page, pageSize, q, tegsArray);
   }
 
   async selectByIDProduct(barcode: string) {
