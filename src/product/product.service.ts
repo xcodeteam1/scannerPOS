@@ -22,6 +22,7 @@ export class ProductService {
     pageSize: number,
     q?: string,
     tegs?: string,
+    category_id?: number,
   ) {
     if (page <= 0 || pageSize <= 0) {
       throw new BadRequestException('Page and pageSize must be greater than 0');
@@ -33,7 +34,13 @@ export class ProductService {
       tegsArray = tegs.split(',').map((t) => t.trim());
     }
 
-    return this.productRepo.getProducts(page, pageSize, q, tegsArray);
+    return this.productRepo.getProducts(
+      page,
+      pageSize,
+      q,
+      tegsArray,
+      category_id,
+    );
   }
 
   async selectByIDProduct(barcode: string) {

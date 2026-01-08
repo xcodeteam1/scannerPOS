@@ -62,15 +62,13 @@ export class ProductRepo {
     pageSize: number,
     q?: string,
     tegs?: string[],
+    category_id?: number,
   ) {
     const offset = (page - 1) * pageSize;
-    let totalCountResult, dataResult;
-
     const params: any[] = [];
 
     let whereClause = `WHERE product.is_deleted = FALSE`;
 
-    // 🔍 q bo‘yicha qidiruv
     if (q && q.trim() !== '') {
       const fullText = q;
       const ilikeText = `%${q}%`;
@@ -82,36 +80,40 @@ export class ProductRepo {
           OR product.barcode ILIKE ?
         )
       `;
-
       params.push(fullText, ilikeText, ilikeText);
     }
 
-    // 🏷️ tegs bo‘yicha filter
     if (tegs && tegs.length > 0) {
       whereClause += ` AND product.tegs && ?::tegs[]`;
       params.push(tegs);
     }
 
-    // --- total count
-    totalCountResult = await db.raw(
+    // ⭐️⭐️⭐️ YANGI QO‘SHILDI
+    if (category_id) {
+      whereClause += ` AND product.category_id = ?`;
+      params.push(category_id);
+    }
+
+    // COUNT
+    const totalCountResult = await db.raw(
       `
-      SELECT COUNT(*) 
-      FROM product
-      JOIN branch ON branch.id = product.branch_id
-      ${whereClause}
+        SELECT COUNT(*) 
+        FROM product
+        JOIN branch ON branch.id = product.branch_id
+        ${whereClause}
       `,
       params,
     );
 
-    // --- data
-    dataResult = await db.raw(
+    // DATA
+    const dataResult = await db.raw(
       `
-      SELECT product.*, branch.name AS branch_name
-      FROM product
-      JOIN branch ON branch.id = product.branch_id
-      ${whereClause}
-      ORDER BY product.updated_at DESC
-      LIMIT ? OFFSET ?
+        SELECT product.*, branch.name AS branch_name
+        FROM product
+        JOIN branch ON branch.id = product.branch_id
+        ${whereClause}
+        ORDER BY product.updated_at DESC
+        LIMIT ? OFFSET ?
       `,
       [...params, pageSize, offset],
     );
@@ -119,8 +121,6 @@ export class ProductRepo {
     const totalRecords = parseInt(totalCountResult.rows[0].count);
     const data = dataResult.rows;
     const totalPages = Math.ceil(totalRecords / pageSize);
-    const nextPage = page < totalPages ? page + 1 : null;
-    const prevPage = page > 1 ? page - 1 : null;
 
     return {
       data,
@@ -128,8 +128,8 @@ export class ProductRepo {
         total_records: totalRecords,
         current_page: page,
         total_pages: totalPages,
-        next_page: nextPage,
-        prev_page: prevPage,
+        next_page: page < totalPages ? page + 1 : null,
+        prev_page: page > 1 ? page - 1 : null,
       },
     };
   }

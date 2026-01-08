@@ -32,7 +32,6 @@ dotenv.config();
 export class ProductController {
   constructor(private readonly service: ProductService) {}
 
-  @HttpCode(200)
   @Get('list')
   selectAllProductCont(@Query() query: SelectAllProductQueryDto) {
     return this.service.selectAllProduct(
@@ -40,6 +39,7 @@ export class ProductController {
       Number(query.pageSize),
       query.q,
       query.tegs,
+      query.category_id,
     );
   }
 
