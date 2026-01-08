@@ -27,6 +27,7 @@ export class SelectAllProductQueryDto {
   @IsString()
   q?: string;
 
+  @ApiPropertyOptional({ example: 'new,hit' })
   @IsOptional()
   @IsString()
   tegs?: string;
