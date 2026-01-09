@@ -63,16 +63,18 @@ export class ProductRepo {
     q?: string,
     tegs?: string[],
     category_id?: number,
+    min_price?: number,
+    max_price?: number,
   ) {
     const offset = (page - 1) * pageSize;
     const params: any[] = [];
 
     let whereClause = `WHERE product.is_deleted = FALSE`;
 
+    // 🔍 search
     if (q && q.trim() !== '') {
       const fullText = q;
       const ilikeText = `%${q}%`;
-
       whereClause += `
         AND (
           to_tsvector('simple', product.name) @@ plainto_tsquery(?)
@@ -83,15 +85,26 @@ export class ProductRepo {
       params.push(fullText, ilikeText, ilikeText);
     }
 
+    // 🏷 tegs
     if (tegs && tegs.length > 0) {
       whereClause += ` AND product.tegs && ?::tegs[]`;
       params.push(tegs);
     }
 
-    // ⭐️⭐️⭐️ YANGI QO‘SHILDI
+    // 📂 category
     if (category_id) {
       whereClause += ` AND product.category_id = ?`;
       params.push(category_id);
+    }
+
+    // 💰 price filter
+    if (min_price != null) {
+      whereClause += ` AND product.price >= ?`;
+      params.push(min_price);
+    }
+    if (max_price != null) {
+      whereClause += ` AND product.price <= ?`;
+      params.push(max_price);
     }
 
     // COUNT

@@ -23,16 +23,15 @@ export class ProductService {
     q?: string,
     tegs?: string,
     category_id?: number,
+    min_price?: number,
+    max_price?: number,
   ) {
     if (page <= 0 || pageSize <= 0) {
       throw new BadRequestException('Page and pageSize must be greater than 0');
     }
 
     let tegsArray: string[] | undefined;
-
-    if (tegs) {
-      tegsArray = tegs.split(',').map((t) => t.trim());
-    }
+    if (tegs) tegsArray = tegs.split(',').map((t) => t.trim());
 
     return this.productRepo.getProducts(
       page,
@@ -40,6 +39,8 @@ export class ProductService {
       q,
       tegsArray,
       category_id,
+      min_price,
+      max_price,
     );
   }
 

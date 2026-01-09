@@ -1,4 +1,4 @@
-import { IsInt, Min, IsOptional, IsString } from 'class-validator';
+import { IsInt, Min, IsOptional, IsString, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -32,4 +32,17 @@ export class SelectAllProductQueryDto {
   @Type(() => Number)
   @IsInt()
   category_id?: number;
+
+  // ➕ yangi narx filterlar
+  @ApiPropertyOptional({ example: 10000 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  min_price?: number;
+
+  @ApiPropertyOptional({ example: 50000 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  max_price?: number;
 }

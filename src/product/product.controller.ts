@@ -40,6 +40,8 @@ export class ProductController {
       query.q,
       query.tegs,
       query.category_id,
+      query.min_price,
+      query.max_price,
     );
   }
 
