@@ -46,7 +46,12 @@ export class SaleController {
   }
   @Get('net-profit')
   getNetProfit(@Query() query: NetProfitQueryDto) {
-    return this.service.getNetProfit(query.from, query.to);
+    return this.service.getNetProfit(
+      query.from,
+      query.to,
+      query.branch_id,
+      query.cashier_id,
+    );
   }
 
   @HttpCode(201)

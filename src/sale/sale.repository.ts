@@ -99,36 +99,67 @@ export class SaleRepo {
     const res = await db.raw(selectDailySaleQurey);
     return res.rows;
   }
-  async getNetProfit(from?: string, to?: string) {
+  async getNetProfit(
+    from?: string,
+    to?: string,
+    branch_id?: number,
+    cashier_id?: number,
+  ) {
     const params: any[] = [];
-    let dateFilter = '';
+
+    let saleFilter = 'WHERE 1=1';
+    let debtFilter = 'WHERE 1=1';
+    let returnFilter = 'WHERE 1=1';
+
+    // ------------------ DATE FILTER ------------------
 
     if (from) {
-      dateFilter += ` AND created_at >= ?`;
-      params.push(from);
+      saleFilter += ' AND s.created_at >= ?';
+      debtFilter += ' AND d.created_at >= ?';
+      returnFilter += ' AND r.created_at >= ?';
+      params.push(from, from, from);
     }
 
     if (to) {
-      dateFilter += ` AND created_at <= ?`;
-      params.push(to);
+      saleFilter += ' AND s.created_at <= ?';
+      debtFilter += ' AND d.created_at <= ?';
+      returnFilter += ' AND r.created_at <= ?';
+      params.push(to, to, to);
+    }
+
+    // ------------------ BRANCH FILTER ------------------
+
+    if (branch_id) {
+      saleFilter += ' AND p.branch_id = ?';
+      debtFilter += ' AND p.branch_id = ?';
+      returnFilter += ' AND p.branch_id = ?';
+      params.push(branch_id, branch_id, branch_id);
+    }
+
+    // ------------------ CASHIER FILTER ------------------
+
+    if (cashier_id) {
+      saleFilter += ' AND s.cashier_id = ?';
+      debtFilter += ' AND d.customer_id = ?'; // agar debt ham kassirga bog‘langan bo‘lsa shu
+      params.push(cashier_id, cashier_id);
     }
 
     const query = `
       SELECT
-        -- sotuvdan foyda
+        -- sotuvdan sof foyda
         COALESCE((
           SELECT SUM((p.price - p.real_price) * s.quantity)
           FROM sale s
           JOIN product p ON p.barcode = s.item_barcode
-          WHERE 1=1 ${dateFilter.replace(/created_at/g, 's.created_at')}
+          ${saleFilter}
         ), 0)
         +
-        -- qarz savdosidan foyda
+        -- qarz savdosidan sof foyda
         COALESCE((
           SELECT SUM((p.price - p.real_price) * d.quantity)
           FROM debt d
           JOIN product p ON p.barcode = d.item_barcode
-          WHERE 1=1 ${dateFilter.replace(/created_at/g, 'd.created_at')}
+          ${debtFilter}
         ), 0)
         -
         -- qaytgan tovar zarar
@@ -136,7 +167,7 @@ export class SaleRepo {
           SELECT SUM((p.price - p.real_price) * r.quantity)
           FROM return r
           JOIN product p ON p.barcode = r.item_barcode
-          WHERE 1=1 ${dateFilter.replace(/created_at/g, 'r.created_at')}
+          ${returnFilter}
         ), 0)
         AS net_profit;
     `;
