@@ -99,6 +99,52 @@ export class SaleRepo {
     const res = await db.raw(selectDailySaleQurey);
     return res.rows;
   }
+  async getNetProfit(from?: string, to?: string) {
+    const params: any[] = [];
+    let dateFilter = '';
+
+    if (from) {
+      dateFilter += ` AND created_at >= ?`;
+      params.push(from);
+    }
+
+    if (to) {
+      dateFilter += ` AND created_at <= ?`;
+      params.push(to);
+    }
+
+    const query = `
+      SELECT
+        -- sotuvdan foyda
+        COALESCE((
+          SELECT SUM((p.price - p.real_price) * s.quantity)
+          FROM sale s
+          JOIN product p ON p.barcode = s.item_barcode
+          WHERE 1=1 ${dateFilter.replace(/created_at/g, 's.created_at')}
+        ), 0)
+        +
+        -- qarz savdosidan foyda
+        COALESCE((
+          SELECT SUM((p.price - p.real_price) * d.quantity)
+          FROM debt d
+          JOIN product p ON p.barcode = d.item_barcode
+          WHERE 1=1 ${dateFilter.replace(/created_at/g, 'd.created_at')}
+        ), 0)
+        -
+        -- qaytgan tovar zarar
+        COALESCE((
+          SELECT SUM((p.price - p.real_price) * r.quantity)
+          FROM return r
+          JOIN product p ON p.barcode = r.item_barcode
+          WHERE 1=1 ${dateFilter.replace(/created_at/g, 'r.created_at')}
+        ), 0)
+        AS net_profit;
+    `;
+
+    const res = await db.raw(query, params);
+    return res.rows[0];
+  }
+
   async searchNameBarcode(q: string) {
     const res = await db.raw(searchNameBarcodeQuery, [`%${q}%`, `%${q}%`]);
     return res.rows;

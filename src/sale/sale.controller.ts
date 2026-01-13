@@ -3,6 +3,7 @@ import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { SaleService } from './sale.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { SearchSalesDto } from './dto/search-sale.dto';
+import { NetProfitQueryDto } from './dto/net-profit.dto';
 
 @ApiTags('Sale')
 @Controller('sale')
@@ -42,6 +43,10 @@ export class SaleController {
       query.from ? new Date(query.from) : undefined,
       query.to ? new Date(query.to) : undefined,
     );
+  }
+  @Get('net-profit')
+  getNetProfit(@Query() query: NetProfitQueryDto) {
+    return this.service.getNetProfit(query.from, query.to);
   }
 
   @HttpCode(201)

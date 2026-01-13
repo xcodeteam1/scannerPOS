@@ -13,6 +13,9 @@ export class SaleService {
     private readonly saleRepo: SaleRepo,
     private readonly productRepo: ProductRepo,
   ) {}
+  async getNetProfit(from?: string, to?: string) {
+    return this.saleRepo.getNetProfit(from, to);
+  }
 
   async getSales(
     page: number,
