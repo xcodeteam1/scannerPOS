@@ -8,6 +8,7 @@ const selectDailySaleQurey: string = `
         SUM(COALESCE(sale.price, 0)) AS cashier_price,
         COUNT(*) AS cashier_order,
         cashier.name AS cashier_name,
+        cashier.id AS cashier_id,
         branch.name AS branch_name
         FROM sale
         LEFT JOIN cashier ON cashier.id = sale.cashier_id 
