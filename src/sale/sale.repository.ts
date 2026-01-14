@@ -14,7 +14,7 @@ const selectDailySaleQurey: string = `
         LEFT JOIN cashier ON cashier.id = sale.cashier_id 
         LEFT JOIN branch ON branch.id = cashier.branch_id
         WHERE DATE(sale.created_at) = CURRENT_DATE AND sale.is_debt = false
-        GROUP BY  cashier.name, branch.name
+        GROUP BY  cashier.name, branch.name, cashier.id
         ORDER BY cashier_price DESC;
 
 `;
