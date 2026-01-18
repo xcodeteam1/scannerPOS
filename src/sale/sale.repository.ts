@@ -329,30 +329,41 @@ export class SaleRepo {
       cashier_id: number;
       price: number;
       quantity: number;
-      description: string;
-      payment_type: 'cash' | 'terminal' | 'online';
+      description?: string;
+      payment_type?: 'cash' | 'terminal' | 'online';
     }[],
   ) {
-    const results = [];
+    const trx = await db.transaction();
 
-    for (const sale of data) {
-      const res = await db.raw(createSaleQuery, [
-        sale.item_barcode,
-        sale.price,
-        sale.quantity,
-        sale.cashier_id,
-        sale.description,
-        sale.payment_type,
-      ]);
+    try {
+      const results = [];
 
-      await db.raw(updateProductQuantityQuery, [
-        sale.quantity,
-        sale.item_barcode,
-      ]);
+      for (const sale of data) {
+        const paymentType = sale.payment_type ?? 'cash'; // 👈 default
 
-      results.push(res.rows[0]);
+        const res = await trx.raw(createSaleQuery, [
+          sale.item_barcode,
+          sale.price,
+          sale.quantity,
+          sale.cashier_id,
+          sale.description ?? '',
+          paymentType, // 👈 doim bor
+        ]);
+
+        await trx.raw(updateProductQuantityQuery, [
+          sale.quantity,
+          sale.item_barcode,
+        ]);
+
+        results.push(res.rows[0]);
+      }
+
+      await trx.commit();
+      return results;
+    } catch (err) {
+      await trx.rollback();
+      console.error('CREATE SALE ERROR 👉', err.message);
+      throw err;
     }
-
-    return results;
   }
 }
