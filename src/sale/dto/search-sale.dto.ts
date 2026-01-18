@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class SearchSalesDto {
@@ -44,4 +44,9 @@ export class SearchSalesDto {
   @Type(() => Number)
   @IsNumber()
   pageSize: number = 10;
+
+  @ApiPropertyOptional({ enum: ['cash', 'terminal', 'online'] })
+  @IsOptional()
+  @IsEnum(['cash', 'terminal', 'online'])
+  payment_type?: 'cash' | 'terminal' | 'online';
 }

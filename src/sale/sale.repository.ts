@@ -18,16 +18,17 @@ const selectDailySaleQurey: string = `
         ORDER BY cashier_price DESC;
 
 `;
-const createSaleQuery: string = `
-        INSERT INTO sale(
-        item_barcode,
-        price,
-        quantity,
-        cashier_id,
-        description
-        )
-        VALUES(?,?,?,?,?)
-        RETURNING *;
+const createSaleQuery = `
+INSERT INTO sale(
+  item_barcode,
+  price,
+  quantity,
+  cashier_id,
+  description,
+  payment_type
+)
+VALUES(?,?,?,?,?,?)
+RETURNING *;
 `;
 
 const updateProductQuantityQuery: string = `
@@ -226,129 +227,79 @@ export class SaleRepo {
     cashier_id?: number,
     from?: Date,
     to?: Date,
+    payment_type?: 'cash' | 'terminal' | 'online',
   ) {
     const offset = (page - 1) * pageSize;
 
-    let totalCountResult, dataResult;
+    // Base query parts
+    let whereConditions: string[] = [];
+    let params: any[] = [];
 
-    if (q && !branch_id && !cashier_id && !from && !to) {
-      totalCountResult = await db.raw(
-        `
-        SELECT COUNT(*) 
-        FROM sale
-        LEFT JOIN product ON product.barcode = sale.item_barcode
-        LEFT JOIN cashier ON cashier.id = sale.cashier_id
-        WHERE sale.item_barcode ILIKE ? OR product.name ILIKE ?;
-        `,
-        [`%${q}%`, `%${q}%`],
-      );
-
-      dataResult = await db.raw(
-        `
-        SELECT sale.*, product.name AS product_name, cashier.branch_id
-        FROM sale
-        LEFT JOIN product ON product.barcode = sale.item_barcode
-        LEFT JOIN cashier ON cashier.id = sale.cashier_id
-        WHERE sale.item_barcode ILIKE ? OR product.name ILIKE ?
-        ORDER BY sale.created_at DESC
-        LIMIT ? OFFSET ?;
-        `,
-        [`%${q}%`, `%${q}%`, pageSize, offset],
-      );
-    } else if (q && branch_id && !cashier_id && !from && !to) {
-      totalCountResult = await db.raw(
-        `
-        SELECT COUNT(*)
-        FROM sale
-        JOIN product ON product.barcode = sale.item_barcode
-        JOIN cashier ON cashier.id = sale.cashier_id
-        WHERE cashier.branch_id = ?
-        AND (sale.item_barcode ILIKE ? OR product.name ILIKE ?);
-        `,
-        [branch_id, `%${q}%`, `%${q}%`],
-      );
-
-      dataResult = await db.raw(
-        `
-        SELECT sale.*, product.name AS product_name
-        FROM sale
-        JOIN product ON product.barcode = sale.item_barcode
-        JOIN cashier ON cashier.id = sale.cashier_id
-        WHERE cashier.branch_id = ?
-        AND (sale.item_barcode ILIKE ? OR product.name ILIKE ?)
-        ORDER BY sale.created_at DESC
-        LIMIT ? OFFSET ?;
-        `,
-        [branch_id, `%${q}%`, `%${q}%`, pageSize, offset],
-      );
-    } else if (q && branch_id && cashier_id && !from && !to) {
-      totalCountResult = await db.raw(
-        `
-        SELECT COUNT(*)
-        FROM sale
-        JOIN product ON product.barcode = sale.item_barcode
-        JOIN cashier ON cashier.id = sale.cashier_id
-        WHERE cashier.branch_id = ? AND cashier.id = ?
-        AND (sale.item_barcode ILIKE ? OR product.name ILIKE ?);
-        `,
-        [branch_id, cashier_id, `%${q}%`, `%${q}%`],
-      );
-
-      dataResult = await db.raw(
-        `
-        SELECT sale.*, product.name AS product_name
-        FROM sale
-        JOIN product ON product.barcode = sale.item_barcode
-        JOIN cashier ON cashier.id = sale.cashier_id
-        WHERE cashier.branch_id = ? AND cashier.id = ?
-        AND (sale.item_barcode ILIKE ? OR product.name ILIKE ?)
-        ORDER BY sale.created_at DESC
-        LIMIT ? OFFSET ?;
-        `,
-        [branch_id, cashier_id, `%${q}%`, `%${q}%`, pageSize, offset],
-      );
-    } else if (q && branch_id && cashier_id && from && to) {
-      totalCountResult = await db.raw(
-        `
-        SELECT COUNT(*)
-        FROM sale
-        JOIN product ON product.barcode = sale.item_barcode
-        JOIN cashier ON cashier.id = sale.cashier_id
-        WHERE sale.created_at >= ? AND sale.created_at <= ?
-        AND cashier.branch_id = ? AND cashier.id = ?
-        AND (sale.item_barcode ILIKE ? OR product.name ILIKE ?);
-        `,
-        [from, to, branch_id, cashier_id, `%${q}%`, `%${q}%`],
-      );
-
-      dataResult = await db.raw(
-        `
-        SELECT sale.*, product.name AS product_name
-        FROM sale
-        JOIN product ON product.barcode = sale.item_barcode
-        JOIN cashier ON cashier.id = sale.cashier_id
-        WHERE sale.created_at >= ? AND sale.created_at <= ?
-        AND cashier.branch_id = ? AND cashier.id = ?
-        AND (sale.item_barcode ILIKE ? OR product.name ILIKE ?)
-        ORDER BY sale.created_at DESC
-        LIMIT ? OFFSET ?;
-        `,
-        [from, to, branch_id, cashier_id, `%${q}%`, `%${q}%`, pageSize, offset],
-      );
-    } else {
-      totalCountResult = await db.raw(`SELECT COUNT(*) FROM sale`);
-      dataResult = await db.raw(
-        `
-        SELECT sale.*, product.name AS product_name, cashier.branch_id
-        FROM sale
-        LEFT JOIN product ON product.barcode = sale.item_barcode
-        LEFT JOIN cashier ON cashier.id = sale.cashier_id
-        ORDER BY sale.created_at DESC
-        LIMIT ? OFFSET ?;
-        `,
-        [pageSize, offset],
-      );
+    // Add payment_type filter if provided
+    if (payment_type) {
+      whereConditions.push('sale.payment_type = ?');
+      params.push(payment_type);
     }
+
+    // Add date range filter
+    if (from && to) {
+      whereConditions.push('sale.created_at >= ?');
+      whereConditions.push('sale.created_at <= ?');
+      params.push(from, to);
+    }
+
+    // Add branch filter
+    if (branch_id) {
+      whereConditions.push('cashier.branch_id = ?');
+      params.push(branch_id);
+    }
+
+    // Add cashier filter
+    if (cashier_id) {
+      whereConditions.push('cashier.id = ?');
+      params.push(cashier_id);
+    }
+
+    // Add search filter
+    if (q) {
+      whereConditions.push(
+        '(sale.item_barcode ILIKE ? OR product.name ILIKE ?)',
+      );
+      params.push(`%${q}%`, `%${q}%`);
+    }
+
+    // Build WHERE clause
+    const whereClause =
+      whereConditions.length > 0
+        ? 'WHERE ' + whereConditions.join(' AND ')
+        : '';
+
+    // Determine JOIN type based on filters
+    const joinType = branch_id || cashier_id ? 'JOIN' : 'LEFT JOIN';
+
+    // Build and execute count query
+    const countQuery = `
+      SELECT COUNT(*) 
+      FROM sale
+      ${joinType} product ON product.barcode = sale.item_barcode
+      ${joinType} cashier ON cashier.id = sale.cashier_id
+      ${whereClause}
+    `;
+
+    const totalCountResult = await db.raw(countQuery, params);
+
+    // Build and execute data query
+    const dataQuery = `
+      SELECT sale.*, product.name AS product_name, cashier.branch_id
+      FROM sale
+      ${joinType} product ON product.barcode = sale.item_barcode
+      ${joinType} cashier ON cashier.id = sale.cashier_id
+      ${whereClause}
+      ORDER BY sale.created_at DESC
+      LIMIT ? OFFSET ?
+    `;
+
+    const dataResult = await db.raw(dataQuery, [...params, pageSize, offset]);
 
     const totalRecords = parseInt(totalCountResult.rows[0].count);
     const data = dataResult.rows;
@@ -368,7 +319,6 @@ export class SaleRepo {
       },
     };
   }
-
   async selectByIDCashier(id: number) {
     const res = await db.raw(selectByIDCashierQuery, [id]);
     return res.rows;
@@ -380,6 +330,7 @@ export class SaleRepo {
       price: number;
       quantity: number;
       description: string;
+      payment_type: 'cash' | 'terminal' | 'online';
     }[],
   ) {
     const results = [];
@@ -391,11 +342,14 @@ export class SaleRepo {
         sale.quantity,
         sale.cashier_id,
         sale.description,
+        sale.payment_type,
       ]);
+
       await db.raw(updateProductQuantityQuery, [
         sale.quantity,
         sale.item_barcode,
       ]);
+
       results.push(res.rows[0]);
     }
 

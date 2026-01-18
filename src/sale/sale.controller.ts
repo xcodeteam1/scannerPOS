@@ -42,6 +42,7 @@ export class SaleController {
       query.cashier_id,
       query.from ? new Date(query.from) : undefined,
       query.to ? new Date(query.to) : undefined,
+      query.payment_type,
     );
   }
   @Get('net-profit')

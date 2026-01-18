@@ -30,6 +30,7 @@ export class SaleService {
     cashier_id?: number,
     from?: Date,
     to?: Date,
+    payment_type?: 'cash' | 'terminal' | 'online',
   ) {
     return this.saleRepo.getSales(
       page,
@@ -39,6 +40,7 @@ export class SaleService {
       cashier_id,
       from,
       to,
+      payment_type,
     );
   }
 

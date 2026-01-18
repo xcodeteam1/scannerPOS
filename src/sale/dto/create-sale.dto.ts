@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsDefined,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 
 export class CreateSaleDto {
   @ApiProperty()
@@ -30,4 +36,8 @@ export class CreateSaleDto {
   @IsDefined({ message: 'description property mavjud bolishi shart' })
   @IsString()
   description: string;
+
+  @ApiProperty({ enum: ['cash', 'terminal', 'online'] })
+  @IsEnum(['cash', 'terminal', 'online'])
+  payment_type: 'cash' | 'terminal' | 'online';
 }
