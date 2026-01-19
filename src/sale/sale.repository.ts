@@ -230,95 +230,64 @@ export class SaleRepo {
     payment_type?: 'cash' | 'terminal' | 'online',
   ) {
     const offset = (page - 1) * pageSize;
+    const params: any[] = [];
 
-    // Base query parts
-    let whereConditions: string[] = [];
-    let params: any[] = [];
+    let where = `WHERE 1=1`;
 
-    // Add payment_type filter if provided
-    if (payment_type) {
-      whereConditions.push('sale.payment_type = ?');
-      params.push(payment_type);
-    }
-
-    // Add date range filter
-    if (from && to) {
-      whereConditions.push('sale.created_at >= ?');
-      whereConditions.push('sale.created_at <= ?');
-      params.push(from, to);
-    }
-
-    // Add branch filter
-    if (branch_id) {
-      whereConditions.push('cashier.branch_id = ?');
-      params.push(branch_id);
-    }
-
-    // Add cashier filter
-    if (cashier_id) {
-      whereConditions.push('cashier.id = ?');
-      params.push(cashier_id);
-    }
-
-    // Add search filter
     if (q) {
-      whereConditions.push(
-        '(sale.item_barcode ILIKE ? OR product.name ILIKE ?)',
-      );
+      where += ` AND (p.name ILIKE ? OR s.item_barcode ILIKE ?)`;
       params.push(`%${q}%`, `%${q}%`);
     }
 
-    // Build WHERE clause
-    const whereClause =
-      whereConditions.length > 0
-        ? 'WHERE ' + whereConditions.join(' AND ')
-        : '';
+    if (branch_id) {
+      where += ` AND c.branch_id = ?`;
+      params.push(branch_id);
+    }
 
-    // Determine JOIN type based on filters
-    const joinType = branch_id || cashier_id ? 'JOIN' : 'LEFT JOIN';
+    if (cashier_id) {
+      where += ` AND s.cashier_id = ?`;
+      params.push(cashier_id);
+    }
 
-    // Build and execute count query
-    const countQuery = `
-      SELECT COUNT(*) 
-      FROM sale
-      ${joinType} product ON product.barcode = sale.item_barcode
-      ${joinType} cashier ON cashier.id = sale.cashier_id
-      ${whereClause}
-    `;
+    if (from) {
+      where += ` AND s.created_at >= ?`;
+      params.push(from);
+    }
 
-    const totalCountResult = await db.raw(countQuery, params);
+    if (to) {
+      where += ` AND s.created_at <= ?`;
+      params.push(to);
+    }
 
-    // Build and execute data query
-    const dataQuery = `
-      SELECT sale.*, product.name AS product_name, cashier.branch_id
-      FROM sale
-      ${joinType} product ON product.barcode = sale.item_barcode
-      ${joinType} cashier ON cashier.id = sale.cashier_id
-      ${whereClause}
-      ORDER BY sale.created_at DESC
+    const data = await db.raw(
+      `
+      SELECT 
+        s.id,
+        s.item_barcode,
+        p.name AS product_name,
+        c.name AS cashier_name,
+        s.price,
+        s.quantity 
+          - COALESCE(SUM(r.quantity), 0) AS final_quantity, -- 👈 MINUS QAYTARILGAN
+        s.created_at
+      FROM sale s
+      JOIN product p ON p.barcode = s.item_barcode
+      JOIN cashier c ON c.id = s.cashier_id
+      LEFT JOIN return r 
+        ON r.item_barcode = s.item_barcode 
+       AND r.created_at >= s.created_at
+      ${where}
+      GROUP BY s.id, p.name, c.name
+      HAVING (s.quantity - COALESCE(SUM(r.quantity), 0)) > 0 -- 👈 faqat real sotilganlar
+      ORDER BY s.created_at DESC
       LIMIT ? OFFSET ?
-    `;
+      `,
+      [...params, pageSize, offset],
+    );
 
-    const dataResult = await db.raw(dataQuery, [...params, pageSize, offset]);
-
-    const totalRecords = parseInt(totalCountResult.rows[0].count);
-    const data = dataResult.rows;
-
-    const totalPages = Math.ceil(totalRecords / pageSize);
-    const nextPage = page < totalPages ? page + 1 : null;
-    const prevPage = page > 1 ? page - 1 : null;
-
-    return {
-      data,
-      pagination: {
-        total_records: totalRecords,
-        current_page: page,
-        total_pages: totalPages,
-        next_page: nextPage,
-        prev_page: prevPage,
-      },
-    };
+    return data.rows;
   }
+
   async selectByIDCashier(id: number) {
     const res = await db.raw(selectByIDCashierQuery, [id]);
     return res.rows;
