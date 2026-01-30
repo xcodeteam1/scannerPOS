@@ -95,6 +95,7 @@ const searchDateQuery: string = `
 `;
 const selectByIDCashierQuery: string = `
     SELECT *FROM cashier WHERE id = ?;`;
+    
 @Injectable()
 export class SaleRepo {
   async selectDailySale() {
